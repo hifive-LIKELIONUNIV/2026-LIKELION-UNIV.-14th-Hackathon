@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import bgImage from '../../assets/images/image 1.png'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import './StartPage.css'
 
 function StartPage() {
+  const navigate = useNavigate()
+
   return (
     <div className="start-page">
       <div className="start-page__stage">
@@ -34,7 +37,11 @@ function StartPage() {
               MCM의 시간을 건너, 그 시대 속 당신을 만나보세요.
             </p>
             <div className="start-page__spacer" aria-hidden="true" />
-            <button type="button" className="start-page__cta">
+            <button
+              type="button"
+              className="start-page__cta"
+              onClick={() => navigate('/login')}
+            >
               체험 시작하기
               <span className="start-page__cta-arrow" aria-hidden="true">
                 &#8250;

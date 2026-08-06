@@ -148,13 +148,15 @@
 }
 
 .start-page__title {
+  width: 34.7917cqw;
+  height: 13.8889cqw;
   margin: 0;
   text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  font-size: 6.1111cqw;
-  line-height: 1.05;
-  letter-spacing: 0.12em;
+  font-family: "DM Serif Display", serif;
+  font-size: 7.6389cqw;
+  font-weight: 400;
+  line-height: 6.9444cqw;
+  letter-spacing: 0.2em;
 }
 
 .start-page__title span {
@@ -193,7 +195,7 @@
   background: #a26230;
   color: #fff;
   font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.1806cqw;
+  font-size: 1.9444cqw;
   font-weight: 600;
   cursor: pointer;
   transition:
