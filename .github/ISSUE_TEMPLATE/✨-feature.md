@@ -2,7 +2,7 @@
 name: "✨ Feature"
 about: 새로운 기능 제안 시 사용
 title: "[✨Feat]"
-labels: enhancement
+labels: bug, enhancement
 assignees: ''
 
 ---
