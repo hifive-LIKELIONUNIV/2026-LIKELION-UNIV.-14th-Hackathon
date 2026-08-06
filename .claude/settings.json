@@ -14,7 +14,12 @@
       "Bash(node measure3.mjs)",
       "Bash(rm -f /c/tmp/proc-divider*.png /tmp/vite15.log 2>/dev/null; echo cleaned)",
       "Bash(node checksel.mjs)",
-      "Bash(rm -f /c/tmp/bag-page*.png /tmp/vite16.log 2>/dev/null; echo cleaned)"
+      "Bash(rm -f /c/tmp/bag-page*.png /tmp/vite16.log 2>/dev/null; echo cleaned)",
+      "Bash(node checkredirect.mjs)",
+      "Bash(node checkfooter.mjs)",
+      "Bash(node checkbtn2.mjs)",
+      "Bash(node checkresize.mjs)",
+      "Bash(node checkwide.mjs)"
     ],
     "additionalDirectories": [
       "C:\\tmp"

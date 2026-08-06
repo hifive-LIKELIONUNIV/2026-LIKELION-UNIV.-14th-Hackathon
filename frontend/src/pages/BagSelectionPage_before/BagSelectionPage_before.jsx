@@ -2,7 +2,7 @@ import { useState } from 'react'
 import starkBackpackImage from '../../assets/images/image 54.png'
 import diamondBagImage from '../../assets/images/image 55.png'
 import lizShopperImage from '../../assets/images/image 56.png'
-import './BagSelectionPage.css'
+import './BagSelectionPage_before.css'
 
 const BAGS = [
   {
@@ -25,7 +25,7 @@ const BAGS = [
   },
 ]
 
-function BagSelectionPage() {
+function BagSelectionPageBefore() {
   const [selectedId, setSelectedId] = useState(null)
 
   return (
@@ -42,7 +42,7 @@ function BagSelectionPage() {
           <div className="bag-page__divider" />
 
           <div className="bag-page__intro">
-            <h2 className="bag-page__heading">마음에 드는 가방을 골라주세요</h2>
+            <h2 className="bag-page__heading">취향에 맞는 가방을 골라주세요</h2>
             <p className="bag-page__subtitle">
               선택한 가방과 함께 MCM의 시간을 여행합니다
             </p>
@@ -90,4 +90,4 @@ function BagSelectionPage() {
   )
 }
 
-export default BagSelectionPage
+export default BagSelectionPageBefore

@@ -1,6 +1,15 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./LoginProcessingPage.css";
 
 function LoginProcessingPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => navigate("/bags"), 3000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
     <div className="processing-page">
       <div className="processing-page__stage">

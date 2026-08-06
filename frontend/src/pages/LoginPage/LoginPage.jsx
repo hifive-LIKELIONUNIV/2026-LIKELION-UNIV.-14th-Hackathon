@@ -70,7 +70,11 @@ function LoginPage() {
             </button>
           </form>
 
-          <button type="button" className="login-page__guest">
+          <button
+            type="button"
+            className="login-page__guest"
+            onClick={() => navigate('/bags-before')}
+          >
             로그인 없이 체험하기
           </button>
         </div>
