@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import TimePortalTitle from "../../components/TimePortalTitle/TimePortalTitle.jsx";
 import "./LoginProcessingPage.css";
 
 function LoginProcessingPage() {
@@ -14,10 +15,7 @@ function LoginProcessingPage() {
     <div className="processing-page">
       <div className="processing-page__stage">
         <div className="processing-page__content">
-          <h1 className="time-portal-title">
-            <span className="time">TIME</span>
-            <span className="portal">PORTAL</span>
-          </h1>
+          <TimePortalTitle className="processing-page__title" />
 
           <div className="processing-page__ring-wrap">
             <div className="processing-page__ring-spin" aria-hidden="true" />

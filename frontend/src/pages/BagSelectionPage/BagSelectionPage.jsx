@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import starkBackpackImage from '../../assets/images/image 54.png'
 import diamondBagImage from '../../assets/images/image 55.png'
 import lizShopperImage from '../../assets/images/image 56.png'
@@ -33,10 +34,7 @@ function BagSelectionPage() {
       <div className="bag-page__stage">
         <div className="bag-page__content">
           <header className="bag-page__header">
-            <h1 className="bag-page__title">
-              <span>TIME</span>
-              <span className="bag-page__title--accent">PORTAL</span>
-            </h1>
+            <TimePortalTitle className="bag-page__title" />
           </header>
 
           <div className="bag-page__divider" />

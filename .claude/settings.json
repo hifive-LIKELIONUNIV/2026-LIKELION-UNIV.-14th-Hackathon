@@ -19,7 +19,10 @@
       "Bash(node checkfooter.mjs)",
       "Bash(node checkbtn2.mjs)",
       "Bash(node checkresize.mjs)",
-      "Bash(node checkwide.mjs)"
+      "Bash(node checkwide.mjs)",
+      "Bash(rm -f /c/tmp/final-*.png /tmp/vite29.log 2>/dev/null; echo cleaned)",
+      "Bash(rm -f /c/tmp/loading-p*.png /tmp/vite31.log 2>/dev/null; echo cleaned)",
+      "Bash(node check2005.mjs)"
     ],
     "additionalDirectories": [
       "C:\\tmp"

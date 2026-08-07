@@ -34,24 +34,8 @@
   padding: 2.9861cqw 0;
 }
 
-.bag-page__title {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4em;
-  margin: 0;
-  text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
+.bag-page__title.time-portal-title {
   font-size: 1.9444cqw;
-  letter-spacing: 0.12em;
-}
-
-.bag-page__title span {
-  color: #fff;
-}
-
-.bag-page__title .bag-page__title--accent {
-  color: #a26230;
 }
 
 .bag-page__divider {

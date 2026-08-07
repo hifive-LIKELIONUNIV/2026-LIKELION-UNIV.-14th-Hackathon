@@ -30,25 +30,8 @@
   box-sizing: border-box;
 }
 
-.time-portal-title {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4em;
+.processing-page__title.time-portal-title {
   margin: 0 0 4.1667cqw;
-  text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  font-size: 3.6111cqw;
-  line-height: 1.05;
-  letter-spacing: 0.12em;
-}
-
-.time-portal-title .time {
-  color: #fff;
-}
-
-.time-portal-title .portal {
-  color: #a26230;
 }
 
 .processing-page__ring-wrap {

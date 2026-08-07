@@ -1,0 +1,67 @@
+.orbit-ring {
+  position: relative;
+  width: 32.5cqw;
+  height: 32.5cqw;
+  margin: 0 auto -12.8472cqw;
+  box-sizing: border-box;
+  padding: 2.5cqw 2.2917cqw 2.1528cqw 2.3611cqw;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.orbit-ring__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.orbit-ring__orbit {
+  position: absolute;
+  inset: 0;
+  animation: orbit-ring-spin 16s linear infinite;
+}
+
+.orbit-ring__orbit--inner {
+  animation-duration: 11s;
+  animation-direction: reverse;
+}
+
+.orbit-ring__spark {
+  position: absolute;
+  left: 50%;
+  width: 0.625cqw;
+  height: 0.625cqw;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    #f6d9b3 0%,
+    #a26230 65%,
+    transparent 100%
+  );
+  box-shadow: 0 0 1cqw 0.28cqw rgba(162, 98, 48, 0.85);
+}
+
+.orbit-ring__orbit--outer .orbit-ring__spark {
+  top: 1.2%;
+}
+
+.orbit-ring__orbit--inner .orbit-ring__spark {
+  top: 8.1%;
+}
+
+@keyframes orbit-ring-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring__orbit {
+    animation: none;
+  }
+}

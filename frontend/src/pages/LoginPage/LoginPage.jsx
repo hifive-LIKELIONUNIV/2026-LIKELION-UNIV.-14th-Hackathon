@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import './LoginPage.css'
 
 function LoginPage() {
@@ -28,10 +29,7 @@ function LoginPage() {
     <div className="login-page">
       <div className="login-page__stage">
         <div className="login-page__content">
-          <h1 className="login-page__title">
-            <span>TIME</span>
-            <span className="login-page__title--accent">PORTAL</span>
-          </h1>
+          <TimePortalTitle className="login-page__title" />
 
           <form className="login-page__card" onSubmit={handleSubmit} noValidate>
             <div className="login-page__field">

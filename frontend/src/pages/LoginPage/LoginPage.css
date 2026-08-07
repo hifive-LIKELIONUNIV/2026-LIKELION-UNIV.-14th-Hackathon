@@ -29,25 +29,8 @@
   box-sizing: border-box;
 }
 
-.login-page__title {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4em;
+.login-page__title.time-portal-title {
   margin: 0 0 4.1667cqw;
-  text-align: center;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  font-size: 3.6111cqw;
-  line-height: 1.05;
-  letter-spacing: 0.12em;
-}
-
-.login-page__title span {
-  color: #fff;
-}
-
-.login-page__title .login-page__title--accent {
-  color: #a26230;
 }
 
 .login-page__card {
