@@ -1,7 +1,15 @@
-import StartPage from './pages/StartPage/StartPage.jsx'
+import { Routes, Route } from 'react-router-dom'
+import StartPage from './pages/StartPage/StartPage'
+import PhotoPage from './pages/PhotoPage/PhotoPage'
+import './App.css'
 
 function App() {
-  return <StartPage />
+  return (
+    <Routes>
+      <Route path="/" element={<StartPage />} />
+      <Route path="/photo" element={<PhotoPage />} />
+    </Routes>
+  )
 }
 
 export default App
