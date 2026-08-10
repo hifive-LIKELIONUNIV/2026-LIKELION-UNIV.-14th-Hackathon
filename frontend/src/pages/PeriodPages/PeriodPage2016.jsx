@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
 import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
-import './PeriodPage2005.css'
+import './PeriodPage2016.css'
 
-function PeriodPage2005() {
-  const navigate = useNavigate()
+function PeriodPage2016() {
   const [showBagInfo, setShowBagInfo] = useState(false)
 
   const toggleBagInfo = () => {
@@ -18,17 +16,18 @@ function PeriodPage2005() {
   }
 
   const handleNextPeriod = () => {
-    navigate('/period/2016')
+    // TODO: 2026 페이지가 만들어지면 navigate('/period/2026')로 연결
+    console.log('다음 시대로 클릭됨')
   }
 
   return (
     <div className="page-wrap">
       <div className="page">
         <header>
-          <div className="timeline" style={{ '--progress': 1 / 3 }}>
+          <div className="timeline" style={{ '--progress': 2 / 3 }}>
             <div className="year">1976</div>
-            <div className="year active">2005</div>
-            <div className="year">2016</div>
+            <div className="year">2005</div>
+            <div className="year active">2016</div>
             <div className="year">2026</div>
           </div>
         </header>
@@ -38,13 +37,13 @@ function PeriodPage2005() {
 
           <div className="content">
             <div>
-              <div className="contentTitle">2005, Republic of Korea</div>
-              <div className="contentMiniTitle">새로운 출발</div>
+              <div className="contentTitle">2016, Republic of Korea</div>
+              <div className="contentMiniTitle">Made to Move, 40년의 여정</div>
               <div className="contentTxt">
-                더 많은 사람이 세계를 자유롭게 오가기 시작한 2005년,
-                MCM은 성주그룹과 함께 새로운 여정을 시작했습니다.
-                익숙한 비세토스와 코냑 컬러를 간직한 채, 새로운 세대와
-                더 넓은 세계를 향해 나아갔습니다.
+                &lsquo;Made to Move&rsquo;라는 이름으로 이동의 가능성을
+                새롭게 해석한 2016년, MCM은 창립 40주년을 맞았습니다.
+                여행에서 시작된 MCM의 이야기는 도시와 일상을 자유롭게
+                넘나드는 새로운 라이프스타일로 확장되었습니다.
               </div>
             </div>
 
@@ -100,4 +99,4 @@ function PeriodPage2005() {
   )
 }
 
-export default PeriodPage2005
+export default PeriodPage2016
