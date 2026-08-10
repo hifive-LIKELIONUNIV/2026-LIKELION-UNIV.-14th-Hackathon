@@ -7,6 +7,10 @@ import './StartPage.css'
 function StartPage() {
   const navigate = useNavigate()
 
+  const handleStart = () => {
+    navigate('/photo')
+  }
+
   return (
     <div className="start-page">
       <div className="start-page__stage">
@@ -30,7 +34,7 @@ function StartPage() {
             <button
               type="button"
               className="start-page__cta"
-              onClick={() => navigate('/login')}
+              onClick={handleStart}
             >
               체험 시작하기
               <span className="start-page__cta-arrow" aria-hidden="true">
