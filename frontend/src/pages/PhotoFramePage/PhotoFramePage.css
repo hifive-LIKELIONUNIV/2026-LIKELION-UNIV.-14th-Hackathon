@@ -1,0 +1,166 @@
+.frame-page-wrap {
+  min-height: 100vh;
+  width: 100%;
+  background: #14100e;
+  color: #fff;
+  font-family: "Pretendard", system-ui, sans-serif;
+  padding: 32px 24px 60px;
+  box-sizing: border-box;
+}
+
+.frame-page-wrap * {
+  box-sizing: border-box;
+}
+
+.wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #3a332c;
+  margin-bottom: 34px;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #d7a15f;
+  font-size: 16px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.back-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.frame-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.06em;
+}
+
+.frame-title .portal {
+  color: #A26230;
+}
+
+/* subtitle */
+.frame-subtitle {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+/* photo strip */
+.strip-outer {
+  position: relative;
+}
+
+.strip {
+  position: relative;
+  background: #815e43;
+  border-radius: 8px;
+  padding: 40px 26px 64px;
+  display: flex;
+  gap: 20px;
+}
+
+.strip-logo {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
+.frame {
+  flex: 1;
+  aspect-ratio: 3 / 4;
+  background: #d9d9d9;
+  border-radius: 0;
+}
+
+.strip-brand {
+  position: absolute;
+  right: 26px;
+  bottom: 18px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: #1a1a1a;
+  letter-spacing: 0.02em;
+}
+
+/* action buttons */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-save {
+  background: #2c2824;
+  color: #fff;
+}
+
+.btn-next {
+  background: #A26230;
+  color: #fff;
+}
+
+@media (max-width: 660px) {
+  .strip {
+    flex-wrap: wrap;
+  }
+  .frame {
+    flex-basis: calc(50% - 10px);
+  }
+  .frame-title {
+    font-size: 22px;
+  }
+  .back-btn {
+    position: static;
+    margin-bottom: 10px;
+  }
+  .header {
+    flex-direction: column;
+  }
+}

@@ -1,11 +1,15 @@
+import { useNavigate } from 'react-router-dom'
 import cameraIconYellow from '../../assets/images/사진 촬영_카메라 icon_황색.svg'
 import cameraIconWhite from '../../assets/images/사진 촬영_카메라 icon_흰색.svg'
 import './PeriodPage2026.css'
 
 function PeriodPage2026() {
+  const navigate = useNavigate()
+
   const handleCapture = () => {
-    // TODO: 실제 촬영 로직 연결
-    console.log('촬영하기 클릭됨')
+    // TODO: 실제 촬영 로직 연결. 캡처된 이미지가 생기면
+    // navigate('/photo-frame', { state: { photo: capturedImage } }) 처럼 같이 넘기면 됨
+    navigate('/photo-frame')
   }
 
   return (
