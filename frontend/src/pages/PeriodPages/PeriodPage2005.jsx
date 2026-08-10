@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
 import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
-import './PeriodPage1976.css'
+import './PeriodPage2005.css'
 
-function PeriodPage1976() {
-  const navigate = useNavigate()
+function PeriodPage2005() {
   const [showBagInfo, setShowBagInfo] = useState(false)
 
   const toggleBagInfo = () => {
@@ -18,16 +16,17 @@ function PeriodPage1976() {
   }
 
   const handleNextPeriod = () => {
-    navigate('/period/2005')
+    // TODO: 2016 페이지가 만들어지면 navigate('/period/2016')로 연결
+    console.log('다음 시대로 클릭됨')
   }
 
   return (
     <div className="page-wrap">
       <div className="page">
         <header>
-          <div className="timeline" style={{ '--progress': 0 }}>
-            <div className="year active">1976</div>
-            <div className="year">2005</div>
+          <div className="timeline" style={{ '--progress': 1 / 3 }}>
+            <div className="year">1976</div>
+            <div className="year active">2005</div>
             <div className="year">2016</div>
             <div className="year">2026</div>
           </div>
@@ -38,12 +37,13 @@ function PeriodPage1976() {
 
           <div className="content">
             <div>
-              <div className="contentTitle">1976, Munich</div>
-              <div className="contentMiniTitle">MCM의 출발</div>
+              <div className="contentTitle">2005, Republic of Korea</div>
+              <div className="contentMiniTitle">새로운 출발</div>
               <div className="contentTxt">
-                여행이 새로운 라이프스타일이 되던 시대, MCM은 독일
-                뮌헨에서 탄생했습니다. 여행용 가죽 제품과 비세토스
-                패턴은 이동하는 사람들의 새로운 상징이 되었습니다.
+                더 많은 사람이 세계를 자유롭게 오가기 시작한 2005년,
+                MCM은 성주그룹과 함께 새로운 여정을 시작했습니다.
+                익숙한 비세토스와 코냑 컬러를 간직한 채, 새로운 세대와
+                더 넓은 세계를 향해 나아갔습니다.
               </div>
             </div>
 
@@ -99,4 +99,4 @@ function PeriodPage1976() {
   )
 }
 
-export default PeriodPage1976
+export default PeriodPage2005
