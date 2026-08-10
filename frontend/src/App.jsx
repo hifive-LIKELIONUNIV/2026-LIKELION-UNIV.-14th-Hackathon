@@ -7,6 +7,7 @@ import PeriodPage2005 from './pages/PeriodPages/PeriodPage2005.jsx'
 import PeriodPage2016 from './pages/PeriodPages/PeriodPage2016.jsx'
 import PeriodPage2026 from './pages/PeriodPages/PeriodPage2026.jsx'
 import PhotoFramePage from './pages/PhotoFramePage/PhotoFramePage.jsx'
+import ChoosePage from './pages/ChoosePage/ChoosePage.jsx'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/period/2016" element={<PeriodPage2016 />} />
       <Route path="/period/2026" element={<PeriodPage2026 />} />
       <Route path="/photo-frame" element={<PhotoFramePage />} />
+      <Route path="/choose" element={<ChoosePage />} />
     </Routes>
   )
 }

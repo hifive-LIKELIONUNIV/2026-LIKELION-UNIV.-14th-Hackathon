@@ -15,8 +15,7 @@ function PhotoFramePage() {
   }
 
   const handleNext = () => {
-    // TODO: 다음 단계 페이지가 만들어지면 navigate로 연결
-    console.log('다음 단계로 클릭됨')
+    navigate('/choose')
   }
 
   return (
