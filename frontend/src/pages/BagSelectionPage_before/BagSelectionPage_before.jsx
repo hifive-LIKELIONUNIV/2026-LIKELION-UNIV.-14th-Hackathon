@@ -4,6 +4,7 @@ import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.js
 import starkBackpackImage from '../../assets/images/image 54.png'
 import diamondBagImage from '../../assets/images/image 55.png'
 import lizShopperImage from '../../assets/images/image 56.png'
+import arrowIcon from '../../assets/images/Vector.png'
 import './BagSelectionPage_before.css'
 
 const BAGS = [
@@ -84,9 +85,12 @@ function BagSelectionPageBefore() {
               onClick={handleNext}
             >
               다음 단계로
-              <span className="bag-page__next-arrow" aria-hidden="true">
-                &#8250;
-              </span>
+              <img
+                src={arrowIcon}
+                className="bag-page__next-arrow"
+                alt=""
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
