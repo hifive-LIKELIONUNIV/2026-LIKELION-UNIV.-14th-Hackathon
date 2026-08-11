@@ -68,6 +68,8 @@
 }
 
 .start-page__eyebrow {
+  position: relative;
+  z-index: 1;
   margin: 0 0 0.8333cqw;
   color: #a6a6a6;
   font-family: "DM Serif Text", Georgia, serif;
@@ -80,6 +82,8 @@
 }
 
 .start-page__title.time-portal-title {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 34.7917cqw;
   height: 13.8889cqw;
@@ -141,4 +145,52 @@
 .start-page__cta-arrow {
   font-size: 1.3889cqw;
   line-height: 1;
+}
+
+/* ---------- mobile layout (matches phone mockup) ---------- */
+@media (max-width: 660px) {
+  .start-page__stage {
+    width: 100%;
+    height: 100svh;
+    aspect-ratio: auto;
+  }
+
+  .start-page__content {
+    padding: 45px 24px calc(40px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .start-page__top,
+  .start-page__bottom {
+    max-width: 100%;
+  }
+
+  .start-page__eyebrow {
+    margin: 0 0 6px;
+    font-size: 15px;
+  }
+
+  .start-page__title.time-portal-title {
+    width: auto;
+    height: auto;
+    font-size: 46px;
+    line-height: 42px;
+  }
+
+  .start-page__subtitle {
+    width: 100%;
+    font-size: 15px;
+  }
+
+  .start-page__cta {
+    width: 100%;
+    max-width: 264px;
+    gap: 6px;
+    border-radius: 8px;
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+
+  .start-page__cta-arrow {
+    font-size: 14px;
+  }
 }
