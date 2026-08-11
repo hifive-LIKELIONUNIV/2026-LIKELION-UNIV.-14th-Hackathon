@@ -8,7 +8,7 @@ function StartPage() {
   const navigate = useNavigate()
 
   const handleStart = () => {
-    navigate('/photo')
+    navigate('/login')
   }
 
   return (
