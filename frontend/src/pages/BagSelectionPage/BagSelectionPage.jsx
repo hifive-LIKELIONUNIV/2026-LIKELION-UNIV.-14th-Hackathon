@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import starkBackpackImage from '../../assets/images/image 54.png'
 import diamondBagImage from '../../assets/images/image 55.png'
@@ -27,7 +28,12 @@ const BAGS = [
 ]
 
 function BagSelectionPage() {
+  const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState(null)
+
+  const handleNext = () => {
+    navigate('/photo')
+  }
 
   return (
     <div className="bag-page">
@@ -75,6 +81,7 @@ function BagSelectionPage() {
               type="button"
               className="bag-page__next"
               disabled={!selectedId}
+              onClick={handleNext}
             >
               다음 단계로
               <span className="bag-page__next-arrow" aria-hidden="true">
