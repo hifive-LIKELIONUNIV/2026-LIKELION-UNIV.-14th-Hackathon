@@ -23,9 +23,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 10.9028cqw 1.6667cqw;
+  padding: 0 1.6667cqw;
   box-sizing: border-box;
 }
 
@@ -36,11 +37,12 @@
 .login-page__card {
   display: flex;
   flex-direction: column;
+  gap: 4.1667cqw;
   width: 47.0139cqw;
   box-sizing: border-box;
-  padding: 2.7778cqw 3.3333cqw;
-  border-radius: 0.8333cqw;
-  background: #221c17;
+  padding: 4.8611cqw 5.5556cqw 4.1667cqw 5.5556cqw;
+  border-radius: 1.3889cqw;
+  background: #232323;
 }
 
 .login-page__field {
@@ -48,22 +50,16 @@
   flex-direction: column;
 }
 
-.login-page__field + .login-page__field {
-  margin-top: 1.9444cqw;
-}
-
-.login-page__label {
-  margin-bottom: 0.8333cqw;
-  color: #fff;
-  font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.1806cqw;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.login-page__required {
-  margin-left: 0.15em;
-  color: #a26230;
+.login-page__label-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .login-page__input {
@@ -72,12 +68,16 @@
   border: none;
   border-bottom: 1px solid #5c5347;
   background: transparent;
-  padding: 0 0 0.6944cqw;
+  padding: 0.6944cqw 0;
   color: #fff;
   font-family: "Pretendard", system-ui, sans-serif;
   font-size: 1.1806cqw;
   outline: none;
   transition: border-color 0.2s ease;
+}
+
+.login-page__input::placeholder {
+  color: #8a8378;
 }
 
 .login-page__input:focus {
@@ -90,9 +90,9 @@
 .login-page__input:-webkit-autofill:active,
 .login-page__input:autofill {
   -webkit-text-fill-color: #fff !important;
-  -webkit-box-shadow: 0 0 0 1000px #221c17 inset !important;
-  box-shadow: 0 0 0 1000px #221c17 inset !important;
-  background-color: #221c17 !important;
+  -webkit-box-shadow: 0 0 0 1000px #232323 inset !important;
+  box-shadow: 0 0 0 1000px #232323 inset !important;
+  background-color: #232323 !important;
   caret-color: #fff !important;
   transition: background-color 9999s ease-in-out 0s;
 }
@@ -106,7 +106,6 @@
 }
 
 .login-page__submit {
-  margin-top: 2.7778cqw;
   border: none;
   border-radius: 0.5556cqw;
   padding: 1.25cqw 2.5cqw;
@@ -134,9 +133,9 @@
   border: none;
   background: none;
   padding: 0;
-  color: #fff;
+  color: #d9d9d9;
   font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.1806cqw;
+  font-size: 2.2222cqw;
   font-weight: 400;
   text-decoration: underline;
   text-underline-offset: 0.3em;
@@ -156,7 +155,7 @@
   }
 
   .login-page__content {
-    padding: 64px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 40px calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
   .login-page__title.time-portal-title {
@@ -166,21 +165,13 @@
   .login-page__card {
     width: 100%;
     max-width: 393px;
+    gap: 20px;
     padding: 20px;
     border-radius: 10px;
   }
 
-  .login-page__field + .login-page__field {
-    margin-top: 20px;
-  }
-
-  .login-page__label {
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
-
   .login-page__input {
-    padding-bottom: 8px;
+    padding: 12px 0;
     font-size: 15px;
   }
 
@@ -190,7 +181,6 @@
   }
 
   .login-page__submit {
-    margin-top: 24px;
     border-radius: 8px;
     padding: 14px 20px;
     font-size: 15px;

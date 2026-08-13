@@ -33,32 +33,36 @@ function LoginPage() {
 
           <form className="login-page__card" onSubmit={handleSubmit} noValidate>
             <div className="login-page__field">
-              <label className="login-page__label" htmlFor="email">
-                이메일 주소<span className="login-page__required">*</span>
+              <label className="login-page__label-sr" htmlFor="email">
+                이메일 주소*
               </label>
               <input
                 id="email"
                 type="email"
                 className="login-page__input"
+                placeholder="이메일 주소*"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
                 spellCheck="false"
+                aria-required="true"
               />
               {emailError && <p className="login-page__error">{emailError}</p>}
             </div>
 
             <div className="login-page__field">
-              <label className="login-page__label" htmlFor="password">
-                비밀번호<span className="login-page__required">*</span>
+              <label className="login-page__label-sr" htmlFor="password">
+                비밀번호*
               </label>
               <input
                 id="password"
                 type="password"
                 className="login-page__input"
+                placeholder="비밀번호*"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
+                aria-required="true"
               />
               {passwordError && <p className="login-page__error">{passwordError}</p>}
             </div>

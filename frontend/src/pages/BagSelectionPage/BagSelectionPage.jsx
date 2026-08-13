@@ -33,7 +33,15 @@ function BagSelectionPage() {
   const [selectedId, setSelectedId] = useState(null)
 
   const handleNext = () => {
-    navigate('/photo')
+    const selectedBag = BAGS.find((bag) => bag.id === selectedId)
+    navigate('/timemachine', {
+      state: {
+        bag: selectedBag && {
+          ...selectedBag,
+          description: selectedBag.description.join(' '),
+        },
+      },
+    })
   }
 
   return (
