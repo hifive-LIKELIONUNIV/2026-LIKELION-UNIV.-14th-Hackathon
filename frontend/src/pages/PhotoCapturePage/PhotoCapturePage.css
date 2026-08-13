@@ -207,7 +207,6 @@ section {
   border-radius: 9px;
   padding: 14px 32px;
   cursor: pointer;
-  white-space: nowrap;
   transition:
     background 0.2s ease,
     transform 0.15s ease;
@@ -237,50 +236,25 @@ section {
   transform: translateY(-1px);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 660px) {
   section {
     justify-content: flex-start;
-    padding: 40px 0 calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .title,
-  .subtitle {
-    padding: 0 24px;
+    padding: 40px 24px calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
   .title {
     font-size: 22px;
   }
 
-  .photo-select-row {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 16px;
-    width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    padding: 4px 24px;
-  }
-
-  .photo-select-row::-webkit-scrollbar {
-    display: none;
-  }
-
   .photo-frame {
-    flex: 0 0 auto;
-    width: 78vw;
-    max-width: 320px;
-    scroll-snap-align: start;
+    width: 44vw;
+    max-width: 200px;
   }
 
   .primary-btn {
-    width: calc(100% - 48px);
-    margin: auto 24px 0;
+    width: 100%;
+    max-width: 360px;
+    margin-top: auto;
     padding: 16px 20px;
-    font-size: 15px;
   }
 }

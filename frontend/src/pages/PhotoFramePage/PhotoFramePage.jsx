@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import mcmLogo from '../../assets/images/bc9c25ea8bc6e8552676791b1eaa679c6e122d97.png'
+import mcmLogo from '../../assets/images/a5ec94c46d1ed7fd47ce06cad157f54ff1b65eb8.png'
 import './PhotoFramePage.css'
 
 function PhotoFramePage() {
@@ -7,11 +7,6 @@ function PhotoFramePage() {
 
   const handleBack = () => {
     navigate(-1)
-  }
-
-  const handleSave = () => {
-    // TODO: 실제 사진 저장(다운로드) 로직 연결
-    console.log('사진 저장 클릭됨')
   }
 
   const handleNext = () => {
@@ -42,46 +37,41 @@ function PhotoFramePage() {
 
         <div className="frame-subtitle">MCM과 함께한 여정을 확인하세요.</div>
 
-        <div className="strip-outer">
-          <div className="strip">
-            <img src={mcmLogo} className="strip-logo" alt="" />
-            <div className="frame" />
-            <div className="frame" />
-            <div className="frame" />
-            <div className="frame" />
-            <div className="strip-brand">MCM</div>
+        <div className="content-row">
+          {/* 왼쪽: 4컷 프레임 */}
+          <div className="frame-card">
+            <div className="frame-grid">
+              <div className="frame" />
+              <div className="frame" />
+              <div className="frame" />
+              <div className="frame" />
+            </div>
+            <img src={mcmLogo} className="frame-stamp" alt="" />
           </div>
-        </div>
 
-        <div className="actions">
-          <button type="button" className="btn btn-save" onClick={handleSave}>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            사진 저장
-          </button>
-          <button type="button" className="btn btn-next" onClick={handleNext}>
-            다음 단계로
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </button>
+          {/* 오른쪽: QR 영역 (QR 생성은 백엔드에서 처리, 여기는 자리만) */}
+          <div className="qr-panel">
+            <div className="qr-title">사진을 휴대폰에 저장하세요</div>
+
+            {/* TODO: 백엔드에서 QR 코드 이미지 URL 내려주면 여기에 렌더링 */}
+            <div className="qr-box" />
+
+            <div className="qr-caption">휴대폰으로 QR코드를 스캔해주세요</div>
+
+            <button type="button" className="btn btn-next" onClick={handleNext}>
+              다음 단계로
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

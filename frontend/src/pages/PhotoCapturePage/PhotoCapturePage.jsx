@@ -1,20 +1,38 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
-import cameraIconYellow from '../../assets/images/사진 촬영_카메라 icon_황색.svg'
-import cameraIconWhite from '../../assets/images/사진 촬영_카메라 icon_흰색.svg'
-import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
-import './PhotoPage.css'
+// import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
+import './PhotoCapturePage.css'
 
-function PhotoPage() {
+const TOTAL_PHOTOS = 2
+const COUNTDOWN_START = 5
+
+function PhotoCapturePage() {
   const navigate = useNavigate()
+  const [photoStep, setPhotoStep] = useState(1)
+  const [count, setCount] = useState(COUNTDOWN_START)
+
+  useEffect(() => {
+    if (count > 0) {
+      const tick = setTimeout(() => setCount((prev) => prev - 1), 1000)
+      return () => clearTimeout(tick)
+    }
+
+    const advance = setTimeout(() => {
+      if (photoStep < TOTAL_PHOTOS) {
+        setPhotoStep((prev) => prev + 1)
+        setCount(COUNTDOWN_START)
+      } else {
+        navigate('/photo-end', { state: { photos: [null, null] } })
+      }
+    }, 500)
+
+    return () => clearTimeout(advance)
+  }, [count, photoStep, navigate])
 
   const handleBack = () => {
     navigate(-1)
-  }
-
-  const handleCapture = () => {
-    navigate('/photo-capture')
   }
 
   return (
@@ -52,14 +70,17 @@ function PhotoPage() {
           <span className="corner tr" />
           <span className="corner bl" />
           <span className="corner br" />
-          <span className="camera-icon-wrap">
-            <img src={cameraIconYellow} className="camera-icon" alt="" />
-            <span className="camera-lens" />
-          </span>
-          <div className="camera-status">카메라 활성화 중</div>
+          {count > 0 && <div className="countdown-number">{count}</div>}
         </div>
 
-        <div className="disclaimer">
+        <div className="shot-counter">
+          <span className="shot-counter-num">
+            {photoStep} / {TOTAL_PHOTOS}
+          </span>
+          <span className="shot-counter-label">촬영 가능한 장수</span>
+        </div>
+
+        {/* <div className="disclaimer">
           <img src={infoIcon} className="info-icon" alt="" aria-hidden="true" />
           <span className="disclaimer-text">
             <span className="disclaimer-line1">
@@ -70,18 +91,10 @@ function PhotoPage() {
               체험 이미지 생성에만 사용됩니다.
             </span>
           </span>
-        </div>
-
-        <button type="button" className="capture-btn" onClick={handleCapture}>
-          <span className="btn-icon-wrap">
-            <img src={cameraIconWhite} alt="" />
-            <span className="camera-lens camera-lens-sm" />
-          </span>
-          촬영하기
-        </button>
+        </div> */}
       </section>
     </>
   )
 }
 
-export default PhotoPage
+export default PhotoCapturePage

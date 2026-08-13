@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
 import bgImage from '../../assets/images/17a7e1790baadbd376b6027d06fb4e0cb431e3cb.png'
 import './LoadingPage1976.css'
+
+const ERAS = [1976, 2005, 2016, 2026]
+const ACTIVE_ERA = 1976
 
 function LoadingPage1976() {
   const [progress, setProgress] = useState(0)
@@ -27,9 +29,28 @@ function LoadingPage1976() {
         <div className="loading-page__overlay" />
 
         <div className="loading-page__content">
-          <OrbitRing />
+          <div className="loading-page__timeline">
+            <div className="loading-page__timeline-track" />
 
-          <p className="loading-page__year">1976</p>
+            <div className="loading-page__timeline-labels">
+              {ERAS.map((era) => (
+                <div key={era} className="loading-page__timeline-item">
+                  {era === ACTIVE_ERA && (
+                    <span className="loading-page__timeline-dot" />
+                  )}
+                  <span
+                    className={
+                      era === ACTIVE_ERA
+                        ? 'loading-page__timeline-label loading-page__timeline-label--active'
+                        : 'loading-page__timeline-label'
+                    }
+                  >
+                    {era}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div
             className="loading-page__progress-track"
