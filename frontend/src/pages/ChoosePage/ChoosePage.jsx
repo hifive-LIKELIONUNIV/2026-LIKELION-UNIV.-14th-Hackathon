@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import loaferImg from '../../assets/images/6f8df85604e388f13f7183e9df7b26a8184e5056.png'
 import roundBagImg from '../../assets/images/c3189b2153a4fa66e9bbbfeb24398006f8561784.png'
@@ -12,39 +12,79 @@ const PRODUCTS = [
     image: loaferImg,
     name: '상품명상품명상품명상품명상...',
     link: '#',
+    brand: 'MCM',
+    title: '상품명상품명상품명상품명상품명',
+    price: '$650.00',
+    color: 'black',
+    description: '선택한 상품과 비슷한 무드로 추천했어요. 클래식한 실루엣과 편안한 착용감이 돋보이는 로퍼예요.',
   },
   {
     id: 2,
     image: roundBagImg,
     name: '상품명상품명상품명상품명상...',
     link: '#',
+    brand: 'MCM',
+    title: '상품명상품명상품명상품명상품명',
+    price: '$890.00',
+    color: 'black',
+    description: '선택한 상품과 비슷한 컬러로 추천했어요. 동그란 실루엣과 스터드 장식이 포인트인 라운드백입니다.',
   },
   {
     id: 3,
     image: bucketBagImg,
     name: '상품명상품명상품명상품명상...',
     link: '#',
+    brand: 'MCM',
+    title: 'Dessau Drawstring Bag in Visetos',
+    price: '$1,080.00',
+    color: 'cognac',
+    description: '선택한 상품과 비슷한 꼬냑 컬러로 추천했어요. 가벼운 착용감과 넉넉한 수납공간이 돋보이는 버킷백입니다.',
   },
   {
     id: 4,
     image: twillyImg,
     name: '상품명상품명상품명상품명상...',
     link: '#',
+    brand: 'MCM',
+    title: '상품명상품명상품명상품명상품명',
+    price: '$210.00',
+    color: 'multi',
+    description: '선택한 상품과 잘 어울리는 패턴으로 추천했어요. 가방에 포인트를 더해주는 트윌리 스카프입니다.',
   },
 ]
 
 function ChoosePage() {
   const navigate = useNavigate()
   const [addedIds, setAddedIds] = useState([])
+  const [toastVisible, setToastVisible] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+
+  useEffect(() => {
+    if (!toastVisible) return
+    const timer = setTimeout(() => setToastVisible(false), 2000)
+    return () => clearTimeout(timer)
+  }, [toastVisible])
 
   const handleBack = () => {
     navigate(-1)
   }
 
   const handleAddToggle = (id) => {
-    setAddedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    )
+    setAddedIds((prev) => {
+      const isCurrentlyAdded = prev.includes(id)
+      if (!isCurrentlyAdded) {
+        setToastVisible(true)
+      }
+      return isCurrentlyAdded ? prev.filter((item) => item !== id) : [...prev, id]
+    })
+  }
+
+  const handleShowDetail = (product) => {
+    setSelectedProduct(product)
+  }
+
+  const handleCloseDetail = () => {
+    setSelectedProduct(null)
   }
 
   const handleNext = () => {
@@ -92,9 +132,13 @@ function ChoosePage() {
                 </div>
                 <div className="choose-card-body">
                   <div className="choose-card-name">{product.name}</div>
-                  <a className="choose-card-link" href={product.link}>
+                  <button
+                    type="button"
+                    className="choose-card-link"
+                    onClick={() => handleShowDetail(product)}
+                  >
                     자세히 보기
-                  </a>
+                  </button>
                   <button
                     type="button"
                     className={
@@ -122,6 +166,56 @@ function ChoosePage() {
       >
         다음 단계로 <span>&#8250;</span>
       </div>
+
+      <div className={toastVisible ? 'choose-toast is-visible' : 'choose-toast'}>
+        상품이 장바구니에 담겼습니다.
+      </div>
+
+      {selectedProduct && (
+        <div className="choose-modal-overlay" onClick={handleCloseDetail}>
+          <div className="choose-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="choose-modal-close"
+              onClick={handleCloseDetail}
+              aria-label="닫기"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+
+            <div className="choose-modal-img">
+              <img src={selectedProduct.image} alt={selectedProduct.title} />
+            </div>
+
+            <div className="choose-modal-body">
+              <div className="choose-modal-brand">{selectedProduct.brand}</div>
+              <div className="choose-modal-name">{selectedProduct.title}</div>
+              <div className="choose-modal-price">{selectedProduct.price}</div>
+              <div className="choose-modal-color">Color: {selectedProduct.color}</div>
+              <div className="choose-modal-divider"></div>
+              <p className="choose-modal-desc">{selectedProduct.description}</p>
+              <div className="choose-modal-thumbs">
+                <div className="choose-modal-thumb">
+                  <img src={selectedProduct.image} alt={selectedProduct.title} />
+                </div>
+                <div className="choose-modal-thumb">
+                  <img src={selectedProduct.image} alt={selectedProduct.title} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
