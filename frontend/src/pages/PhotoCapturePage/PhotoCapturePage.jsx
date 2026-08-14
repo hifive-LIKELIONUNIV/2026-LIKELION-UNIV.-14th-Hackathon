@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
-// import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
+
 import './PhotoCapturePage.css'
 
 const TOTAL_PHOTOS = 2
@@ -80,18 +80,7 @@ function PhotoCapturePage() {
           <span className="shot-counter-label">촬영 가능한 장수</span>
         </div>
 
-        {/* <div className="disclaimer">
-          <img src={infoIcon} className="info-icon" alt="" aria-hidden="true" />
-          <span className="disclaimer-text">
-            <span className="disclaimer-line1">
-              촬영된 얼굴 이미지는 TIME PORTAL
-            </span>
-            &nbsp;
-            <span className="disclaimer-line2">
-              체험 이미지 생성에만 사용됩니다.
-            </span>
-          </span>
-        </div> */}
+        
       </section>
     </>
   )
