@@ -45,52 +45,15 @@
   box-sizing: border-box;
 }
 
-.loading-page__timeline {
-  width: 61.1111cqw;
-  margin: 0 0 6.9444cqw;
-}
-
-.loading-page__timeline-track {
-  width: 100%;
-  height: 0.1389cqw;
-  margin: 0 0 1.25cqw;
-  background: rgba(162, 98, 48, 0.35);
-}
-
-.loading-page__timeline-labels {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.loading-page__timeline-item {
-  position: relative;
-}
-
-.loading-page__timeline-dot {
-  position: absolute;
-  top: -1.3194cqw;
-  left: 50%;
-  width: 0.8333cqw;
-  height: 0.8333cqw;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: #a26230;
-}
-
-.loading-page__timeline-label {
-  color: #7a7a7a;
-  font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.8056cqw;
+.loading-page__year {
+  margin: 0 0 4.4444cqw;
+  color: #a26230;
+  text-align: center;
+  font-family: "DM Serif Display", serif;
   font-weight: 400;
+  font-size: 6.9444cqw;
   line-height: 1;
-  letter-spacing: 0.02em;
-}
-
-.loading-page__timeline-label--active {
-  color: #f5f0e8;
-  font-weight: 500;
+  letter-spacing: 0.1em;
 }
 
 .loading-page__progress-track {
