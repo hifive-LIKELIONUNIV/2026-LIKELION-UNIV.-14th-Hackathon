@@ -21,8 +21,24 @@ MODEL = "gpt-image-2"
 # 감지된 원본 얼굴 비율보다 이 정도 배율만큼 작게 지정 (여전히 크다는 피드백으로 0.9 -> 0.8 -> 0.7로 축소)
 FACE_SIZE_SHRINK_FACTOR = 0.7
 
+# "다시 생성"에서 기존 결과와 다른 결과가 나오도록 매번 하나씩 뽑아서 프롬프트에 추가하는 변주 후보.
+# 표정/조명 같은 임의 변화 대신, 기존 핵심 요구사항(헤어스타일/각도/피부톤/얼굴크기/목길이) 중 하나를
+# 이번 시도에는 더 자연스럽게 다듬는 데 집중하도록 재강조하는 방식.
+VARIATION_HINTS = [
+    "a noticeably more natural hairstyle blend this time — pay extra attention to how individual hair strands "
+    "and the hairline meet the head and background, avoiding any stiff, wig-like, or cut-out look",
+    "an even more precisely natural head angle match to Image 2 this time — double-check the exact rotation and "
+    "tilt so the face doesn't look flat, off-angle, or pasted on",
+    "a more natural, seamlessly matched skin tone this time — blend the replaced face's skin tone and texture more "
+    "closely with Image 2's lighting and color grading so there's no visible mismatch at the edges",
+    "a more naturally proportioned face size this time relative to the body and frame in Image 2 — avoid a face "
+    "that looks too large or too small for the person's build",
+    "a more natural neck length this time — pay extra attention to the chin-to-shoulder distance so it is not "
+    "compressed or shortened when fitting the new face in",
+]
 
-def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=None) -> str:
+
+def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=None, variation_hint=None) -> str:
     meta = ERA_META[era]
 
     if ref_face_ratio is not None:
@@ -51,6 +67,14 @@ def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=Non
 
     detail_block = f"\n\nAdditional details to emphasize for this bag and era: {detail_prompt.strip()}" if detail_prompt else ""
 
+    variation_block = (
+        f"\n\nRegeneration focus: this is a re-generation attempt of the same photo. Compared to a straightforward "
+        f"first attempt, pay extra attention to making ALL of the following more natural: {variation_hint} Keep "
+        "every change subtle and photorealistic, and do not violate any of the requirements above (identity, "
+        "hairstyle content, clothing, bag, composition) while applying them."
+        if variation_hint else ""
+    )
+
     return (
         "Image 1: a reference photo of a person's face and hairstyle (identity source).\n"
         f"Image 2: the target photo — a {meta['label']} era MCM photo already showing the {bag_name}, with the "
@@ -77,7 +101,8 @@ def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=Non
         "shown. Reproduce the outfit's fabric texture and color exactly, and reproduce the bag exactly as it "
         "appears in Image 2 — same shape, same monogram/pattern, same hardware, same stitching and material "
         "texture, with no simplification or redesign of any of these details."
-        f"{detail_block}\n\n"
+        f"{detail_block}"
+        f"{variation_block}\n\n"
         "Constraints: head angle must match Image 2 exactly (see above — this is the top priority), seamless "
         "blending at the face/hair boundary (no visible seams, no mismatched edges), photorealistic result, "
         "consistent color grading/filter across the whole image including the face, no watermark, no extra "
@@ -136,7 +161,16 @@ def generate_result(result: PersonaResult, target_field: str = 'generated_image'
     except Exception:
         ref_face_ratio = None
 
-    prompt = build_prompt(selection.product.name, result.era, ref_face_ratio, reference.detail_prompt)
+    # "다시 생성"(regen_candidate_image로 저장하는 경우)일 때만 변주 항목을 전부 넣어서
+    # 최초 생성과 눈에 띄게 다른 결과가 나오도록 함. 최초 생성은 그대로 유지.
+    variation_hint = (
+        " ".join(f"({i}) {hint};" for i, hint in enumerate(VARIATION_HINTS, start=1))
+        if target_field != 'generated_image' else None
+    )
+
+    prompt = build_prompt(
+        selection.product.name, result.era, ref_face_ratio, reference.detail_prompt, variation_hint
+    )
 
     # openai SDK가 bytes/io.IOBase/PathLike/tuple만 받기 때문에
     # Django의 FieldFile을 그대로 넘기면 안 되고, 실제 파일 경로를 open()으로 열어서 넘겨야 함
