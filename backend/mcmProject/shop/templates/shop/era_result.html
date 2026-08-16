@@ -24,10 +24,16 @@
                  style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;
                         background:rgba(0,0,0,0.6); color:#fff; flex-direction:column;
                         align-items:center; justify-content:center;">
-                <div style="width:70%; height:6px; background:#333; border-radius:3px; overflow:hidden;">
-                    <div id="regen-progress-bar" style="width:0%; height:100%; background:#c98a4b;"></div>
+                <div id="regen-progress-inner" style="width:70%; display:flex; flex-direction:column; align-items:center;">
+                    <div style="width:100%; height:6px; background:#333; border-radius:3px; overflow:hidden;">
+                        <div id="regen-progress-bar" style="width:0%; height:100%; background:#c98a4b;"></div>
+                    </div>
+                    <p id="regen-progress-text">0%</p>
                 </div>
-                <p id="regen-progress-text">0%</p>
+                <!-- 실패 시 여기로 전환 (기본 숨김) -->
+                <p id="regen-error-text" style="display:none; text-align:center; padding:0 12px;">
+                    다시 생성에 실패했어요. 잠시 후 다시 시도해주세요.
+                </p>
             </div>
         </div>
 
@@ -57,8 +63,10 @@
         const era = "{{ era }}";
         const regenBtn = document.getElementById('regen-btn');
         const overlay = document.getElementById('regen-overlay');
+        const regenProgressInner = document.getElementById('regen-progress-inner');
         const regenBar = document.getElementById('regen-progress-bar');
         const regenText = document.getElementById('regen-progress-text');
+        const regenErrorText = document.getElementById('regen-error-text');
         const resultImage = document.getElementById('result-image');
 
         function getCookie(name) {
@@ -67,9 +75,27 @@
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
+        function showRegenError(detail) {
+            // 실제 에러 내용은 콘솔에만 남기고, 사용자에게는 짧은 안내만 보여준 뒤
+            // 원래 이미지로 되돌리고 "다시 생성" 버튼을 다시 노출한다
+            // (실패한 시도는 1회 제한 카운트에 포함시키지 않음 — 서버에서도 동일하게 처리됨)
+            console.error('[era_regenerate] 실패:', detail);
+            regenProgressInner.style.display = 'none';
+            regenErrorText.style.display = 'block';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                regenErrorText.style.display = 'none';
+                regenProgressInner.style.display = 'flex';
+                regenBar.style.width = '0%';
+                regenText.textContent = '0%';
+                if (regenBtn) regenBtn.style.display = 'inline-block';
+            }, 1800);
+        }
+
         if (regenBtn) {
             regenBtn.addEventListener('click', () => {
-                // "다시 생성"은 1회 제한 -> 클릭 즉시 버튼 숨기고, 사진 창 안에서만 로딩 표시
+                // 클릭 즉시 버튼 숨기고, 사진 창 안에서만 로딩 표시
+                // (성공했을 때만 1회 제한이 소모되므로, 실패하면 버튼을 다시 보여줌)
                 regenBtn.style.display = 'none';
                 overlay.style.display = 'flex';
 
@@ -95,8 +121,7 @@
                     finished = true;
                     clearInterval(tickTimer);
                     if (data.error) {
-                        alert('다시 생성에 실패했습니다: ' + data.error);
-                        overlay.style.display = 'none';
+                        showRegenError(data.error);
                         return;
                     }
                     regenBar.style.width = '100%';
@@ -109,8 +134,7 @@
                 .catch(err => {
                     finished = true;
                     clearInterval(tickTimer);
-                    alert('요청 중 오류: ' + err.message);
-                    overlay.style.display = 'none';
+                    showRegenError(err.message);
                 });
             });
         }

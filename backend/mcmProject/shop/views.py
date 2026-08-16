@@ -216,9 +216,13 @@ def era_generate(request, selection_id, era):
     try:
         ai_service.generate_result(result)
     except Exception as e:
+        print(f"[era_generate 실패] selection={selection.id} era={era}: {e}")
         result.status = 'failed'
         result.save()
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse(
+            {'error': '이미지 생성에 실패했어요. 잠시 후 다시 시도해주세요.'},
+            status=500,
+        )
 
     return JsonResponse({
         'success': True,
@@ -260,16 +264,25 @@ def era_regenerate(request, selection_id, era):
     if result.regenerated:
         return JsonResponse({'error': '이미 다시 생성을 사용했습니다.'}, status=400)
 
-    result.regenerated = True
+    # 실패 시 되돌릴 수 있게, regenerated 플래그는 성공했을 때만 저장한다
+    # (이렇게 안 하면 일시적인 API 오류 하나로 재생성 기회를 그냥 날리게 됨)
+    previous_status = result.status
     result.status = 'processing'
     result.save()
 
     try:
         ai_service.generate_result(result)
     except Exception as e:
-        result.status = 'failed'
+        print(f"[era_regenerate 실패] selection={selection.id} era={era}: {e}")
+        result.status = previous_status
         result.save()
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse(
+            {'error': '다시 생성에 실패했어요. 잠시 후 다시 시도해주세요.'},
+            status=500,
+        )
+
+    result.regenerated = True
+    result.save()
 
     return JsonResponse({
         'success': True,

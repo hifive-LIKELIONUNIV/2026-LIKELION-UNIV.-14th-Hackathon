@@ -18,7 +18,7 @@
     </div>
 
     <!-- 2단계: 카메라 화면. 권한 허용되면 자동으로 표시되고,
-         매 촬영(1번째/2번째) 전에 '촬영하기' 버튼이 다시 노출됨 -->
+         첫 촬영만 '촬영하기' 버튼으로 시작하며, 두 번째 촬영은 버튼 없이 바로 이어서 진행됨 -->
     <div id="camera-screen" style="display:none;">
         <h1>얼굴을 인식해주세요.</h1>
         <div style="position:relative; width:300px; height:400px;">
@@ -101,7 +101,7 @@
             startBtn.style.display = 'inline-block';
         }
 
-        // '촬영하기' 클릭 -> 카운트다운 시작 (1번째, 2번째 촬영 모두 이 버튼을 거침)
+        // '촬영하기' 클릭 -> 카운트다운 시작 (1번째 촬영만 이 버튼을 거침, 2번째는 자동 이어짐)
         startBtn.addEventListener('click', () => {
             startBtn.style.display = 'none';
             startCountdown();
@@ -184,8 +184,8 @@
                     inCameraStep = false;
                     window.location.href = `/shop/capture/${selectionId}/choose/`;
                 } else {
-                    // 2번째 촬영도 자동 시작하지 않고 '촬영하기' 버튼을 다시 보여줌
-                    showStartButton();
+                    // 2번째 촬영은 버튼 없이 바로 카운트다운 이어서 진행
+                    startCountdown();
                 }
             })
             .catch(err => {

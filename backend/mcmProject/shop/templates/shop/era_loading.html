@@ -7,26 +7,37 @@
 <body>
     <h1>{{ era_meta.label }}년으로 이동하고 있습니다...</h1>
 
-    <div style="width:400px; height:8px; background:#333; border-radius:4px; overflow:hidden;">
-        <div id="progress-bar" style="width:0%; height:100%; background:#c98a4b; transition: width 0.2s linear;"></div>
+    <div id="progress-wrap">
+        <div style="width:400px; height:8px; background:#333; border-radius:4px; overflow:hidden;">
+            <div id="progress-bar" style="width:0%; height:100%; background:#c98a4b; transition: width 0.2s linear;"></div>
+        </div>
+        <p id="progress-text">0%</p>
+        <p id="hint-text" style="color:#888;"></p>
     </div>
-    <p id="progress-text">0%</p>
-    <p id="hint-text" style="color:#888;"></p>
+
+    <!-- 실패 시 여기로 전환 (기본 숨김) -->
+    <div id="error-box" style="display:none;">
+        <p>이미지 생성에 실패했어요. 잠시 후 다시 시도해주세요.</p>
+        <button id="retry-btn" type="button">다시 시도</button>
+    </div>
 
     <script>
         const selectionId = {{ selection.id }};
         const era = "{{ era }}";
 
+        const progressWrap = document.getElementById('progress-wrap');
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
         const hintText = document.getElementById('hint-text');
+        const errorBox = document.getElementById('error-box');
+        const retryBtn = document.getElementById('retry-btn');
 
         // 예상 소요시간(ms) — 실측 평균에 맞춰 조정할 것
         const EXPECTED_DURATION = 18000;
         const CAP = 92; // 실제 완료 신호 오기 전까지 도달 가능한 최대 %
         const MIN_VISIBLE_MS = 1500; // 너무 빨리 끝나도 최소 이 시간은 진행률을 보여줌
-        const startTime = Date.now();
 
+        let startTime = null;
         let finished = false;
         let tickTimer = null;
 
@@ -59,32 +70,60 @@
             setTimeout(onDone, 400);
         }
 
-        tickTimer = setInterval(updateProgress, 200);
-
-        fetch(`/shop/capture/${selectionId}/era/${era}/generate/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                clearInterval(tickTimer);
-                alert('생성에 실패했습니다: ' + data.error);
-                return;
-            }
-            // 실제 응답이 너무 빨리 와도 최소 노출 시간만큼은 기다렸다가 100%로 마무리
-            const elapsed = Date.now() - startTime;
-            const minWait = Math.max(0, MIN_VISIBLE_MS - elapsed);
-            setTimeout(() => {
-                finishProgress(() => {
-                    window.location.href = data.redirect;
-                });
-            }, minWait);
-        })
-        .catch(err => {
+        function showError() {
+            finished = true;
             clearInterval(tickTimer);
-            alert('요청 중 오류가 발생했습니다: ' + err.message);
+            progressWrap.style.display = 'none';
+            errorBox.style.display = 'block';
+        }
+
+        function resetForRetry() {
+            finished = false;
+            errorBox.style.display = 'none';
+            progressWrap.style.display = 'block';
+            progressBar.style.transition = 'width 0.2s linear';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0%';
+            hintText.textContent = '';
+        }
+
+        function startGeneration() {
+            startTime = Date.now();
+            tickTimer = setInterval(updateProgress, 200);
+
+            fetch(`/shop/capture/${selectionId}/era/${era}/generate/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    // 실제 에러 내용은 콘솔에만 남기고, 사용자에게는 일반적인 안내만 보여줌
+                    console.error('[era_generate] 실패:', data.error);
+                    showError();
+                    return;
+                }
+                // 실제 응답이 너무 빨리 와도 최소 노출 시간만큼은 기다렸다가 100%로 마무리
+                const elapsed = Date.now() - startTime;
+                const minWait = Math.max(0, MIN_VISIBLE_MS - elapsed);
+                setTimeout(() => {
+                    finishProgress(() => {
+                        window.location.href = data.redirect;
+                    });
+                }, minWait);
+            })
+            .catch(err => {
+                console.error('[era_generate] 요청 오류:', err);
+                showError();
+            });
+        }
+
+        retryBtn.addEventListener('click', () => {
+            resetForRetry();
+            startGeneration();
         });
+
+        startGeneration();
     </script>
 </body>
 </html>
