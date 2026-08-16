@@ -112,6 +112,11 @@ class EraReference(models.Model):
     )
     era = models.CharField(max_length=4, choices=ERA_CHOICES)
     image = models.ImageField(upload_to='era_references/')
+    detail_prompt = models.TextField(
+        blank=True,
+        help_text="이 가방×시대 조합에서 강조하고 싶은 디테일(선택사항). "
+                   "작성하면 생성 프롬프트에 그대로 추가됩니다. (영어 권장)"
+    )
 
     class Meta:
         unique_together = ('product', 'era')

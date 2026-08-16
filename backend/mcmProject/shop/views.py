@@ -1,10 +1,17 @@
 import base64
+import io
+
+import qrcode
+from PIL import Image
 from django.core.files.base import ContentFile
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404, HttpResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, CartItem, PersonaSelection, CapturedPhoto
+from .models import Product, CartItem, PersonaSelection, CapturedPhoto, PersonaResult
+from .constants import ERA_ORDER, ERA_META, next_era
+from . import ai_service
 
 
 def select_bag(request):
@@ -118,7 +125,8 @@ def choose_photo(request, selection_id):
     chosen_photo.is_chosen = True
     chosen_photo.save()
 
-    return redirect('shop:select_bag_done')
+    # 사진 선택이 끝나면 첫 번째 시대(1976) 로딩 화면으로 이동
+    return redirect('shop:era_loading', selection_id=selection.id, era=ERA_ORDER[0])
 
 
 def finish_selection(request, selection_id):
@@ -160,3 +168,226 @@ def add_to_cart(request, product_id):
     CartItem.objects.create(user=request.user, product=product)
 
     return JsonResponse({'success': True})
+
+
+# ---- 시대별 로딩 / 생성 / 결과 / 재생성 ----
+
+def _get_or_create_result(selection, era):
+    result, _ = PersonaResult.objects.get_or_create(selection=selection, era=era)
+    return result
+
+
+def era_loading(request, selection_id, era):
+    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성은 era_generate로 fetch."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    if era not in ERA_ORDER:
+        raise Http404("알 수 없는 시대입니다.")
+
+    result = _get_or_create_result(selection, era)
+    if result.status == 'done':
+        return redirect('shop:era_result', selection_id=selection.id, era=era)
+
+    context = {
+        'selection': selection,
+        'era': era,
+        'era_meta': ERA_META[era],
+    }
+    return render(request, 'shop/era_loading.html', context)
+
+
+@require_POST
+def era_generate(request, selection_id, era):
+    """실제 gpt-image-2 호출. 로딩 화면의 fetch가 이 엔드포인트를 호출."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    if era not in ERA_ORDER:
+        return JsonResponse({'error': '알 수 없는 시대입니다.'}, status=400)
+
+    result = _get_or_create_result(selection, era)
+
+    if result.status == 'done':
+        return JsonResponse({
+            'success': True,
+            'redirect': reverse('shop:era_result', args=[selection.id, era]),
+        })
+
+    result.status = 'processing'
+    result.save()
+
+    try:
+        ai_service.generate_result(result)
+    except Exception as e:
+        result.status = 'failed'
+        result.save()
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({
+        'success': True,
+        'redirect': reverse('shop:era_result', args=[selection.id, era]),
+    })
+
+
+def era_result(request, selection_id, era):
+    """시대별 합성 결과 화면. 아직 생성 안 됐으면 로딩 화면으로 되돌림."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    if era not in ERA_ORDER:
+        raise Http404("알 수 없는 시대입니다.")
+
+    result = get_object_or_404(PersonaResult, selection=selection, era=era)
+    if result.status != 'done':
+        return redirect('shop:era_loading', selection_id=selection.id, era=era)
+
+    context = {
+        'selection': selection,
+        'result': result,
+        'era': era,
+        'era_meta': ERA_META[era],
+        'era_order': ERA_ORDER,
+        # 2026(현재)은 합성이 아니라 원본 사진이라 다시 생성 대상이 아님
+        'can_regenerate': (not result.regenerated) and era != '2026',
+        'next_era': next_era(era),
+    }
+    return render(request, 'shop/era_result.html', context)
+
+
+@require_POST
+def era_regenerate(request, selection_id, era):
+    """'다시 생성' — 시대당 1회만 허용, 서버에서 강제."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    result = get_object_or_404(PersonaResult, selection=selection, era=era)
+
+    if era == '2026':
+        return JsonResponse({'error': '현재 시대는 다시 생성할 수 없습니다.'}, status=400)
+    if result.regenerated:
+        return JsonResponse({'error': '이미 다시 생성을 사용했습니다.'}, status=400)
+
+    result.regenerated = True
+    result.status = 'processing'
+    result.save()
+
+    try:
+        ai_service.generate_result(result)
+    except Exception as e:
+        result.status = 'failed'
+        result.save()
+        return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({
+        'success': True,
+        'image_url': result.generated_image.url,
+    })
+
+
+def era_2026_capture(request, selection_id):
+    """시대4(현재)는 합성 없이, 이 시점에 새로 촬영한 사진을 그대로 결과로 사용.
+    era_result(2016)의 '다음 시대로'가 이 화면으로 이동시킴."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    result = _get_or_create_result(selection, '2026')
+
+    if result.status == 'done':
+        return redirect('shop:era_result', selection_id=selection.id, era='2026')
+
+    context = {
+        'selection': selection,
+        'era_meta': ERA_META['2026'],
+    }
+    return render(request, 'shop/era_2026_capture.html', context)
+
+
+@require_POST
+def era_2026_capture_save(request, selection_id):
+    """방금 찍은 사진(base64)을 합성 없이 바로 PersonaResult(era=2026)의 결과로 저장."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    result = _get_or_create_result(selection, '2026')
+
+    data_url = request.POST.get('image_data')
+    if not data_url:
+        return JsonResponse({'error': '이미지 데이터가 없습니다.'}, status=400)
+
+    format_part, imgstr = data_url.split(';base64,')
+    ext = format_part.split('/')[-1]
+
+    result.generated_image.save(
+        f"result_{selection.id}_2026.{ext}",
+        ContentFile(base64.b64decode(imgstr)),
+        save=False,
+    )
+    result.status = 'done'
+    result.save()
+
+    return JsonResponse({
+        'success': True,
+        'redirect': reverse('shop:era_result', args=[selection.id, '2026']),
+    })
+
+
+def passport_result(request, selection_id):
+    """4개 시대 결과를 인생네컷처럼 모아 보여주는 최종 화면."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    results = PersonaResult.objects.filter(selection=selection, status='done').order_by('era')
+
+    if results.count() < len(ERA_ORDER):
+        for era in ERA_ORDER:
+            if not results.filter(era=era).exists():
+                return redirect('shop:era_loading', selection_id=selection.id, era=era)
+
+    context = {
+        'selection': selection,
+        'results': results,
+    }
+    return render(request, 'shop/passport_result.html', context)
+
+
+def _build_passport_grid_image(results):
+    """4개 PersonaResult 이미지를 2x2 네컷 그리드 하나의 이미지로 합성."""
+    cell_w, cell_h = 480, 640
+    gap = 16
+    canvas_w = cell_w * 2 + gap * 3
+    canvas_h = cell_h * 2 + gap * 3
+    canvas = Image.new('RGB', (canvas_w, canvas_h), color=(20, 16, 12))
+
+    positions = [
+        (gap, gap),
+        (gap * 2 + cell_w, gap),
+        (gap, gap * 2 + cell_h),
+        (gap * 2 + cell_w, gap * 2 + cell_h),
+    ]
+
+    for result, pos in zip(results, positions):
+        with Image.open(result.generated_image.path) as img:
+            img = img.convert('RGB').resize((cell_w, cell_h))
+            canvas.paste(img, pos)
+
+    return canvas
+
+
+def passport_download(request, selection_id):
+    """4개 시대 결과를 하나의 네컷 이미지로 합쳐서 다운로드용으로 반환.
+    QR코드가 이 URL을 가리켜서, 스캔하면 바로 이미지가 휴대폰에 다운로드되게 함."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
+
+    if len(results) < len(ERA_ORDER):
+        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+
+    canvas = _build_passport_grid_image(results)
+    buffer = io.BytesIO()
+    canvas.save(buffer, format='PNG')
+
+    response = HttpResponse(buffer.getvalue(), content_type='image/png')
+    response['Content-Disposition'] = f'attachment; filename="time_passport_{selection.id}.png"'
+    return response
+
+
+def passport_qrcode(request, selection_id):
+    """네컷 다운로드 URL을 QR코드 이미지로 즉석 생성해서 반환.
+    사용자가 휴대폰으로 스캔하면 바로 이미지 다운로드가 시작되게 하기 위함."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    target_url = request.build_absolute_uri(
+        reverse('shop:passport_download', args=[selection.id])
+    )
+
+    img = qrcode.make(target_url)
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+
+    return HttpResponse(buffer.getvalue(), content_type='image/png')

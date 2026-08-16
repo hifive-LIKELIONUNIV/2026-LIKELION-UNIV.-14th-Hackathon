@@ -41,7 +41,9 @@
                     <button id="regen-btn" type="button">다시 생성</button>
                 {% endif %}
 
-                {% if next_era %}
+                {% if next_era == '2026' %}
+                    <a href="{% url 'shop:era_2026_capture' selection.id %}"><button type="button">다음 시대로</button></a>
+                {% elif next_era %}
                     <a href="{% url 'shop:era_loading' selection.id next_era %}"><button type="button">다음 시대로</button></a>
                 {% else %}
                     <a href="{% url 'shop:passport_result' selection.id %}"><button type="button">결과 모아보기</button></a>

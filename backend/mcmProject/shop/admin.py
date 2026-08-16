@@ -32,3 +32,9 @@ class PersonaResultAdmin(admin.ModelAdmin):
 class EraReferenceAdmin(admin.ModelAdmin):
     list_display = ('product', 'era')
     list_filter = ('era', 'product')
+
+
+@admin.register(CapturedPhoto)
+class CapturedPhotoAdmin(admin.ModelAdmin):
+    list_display = ('selection', 'is_chosen', 'created_at')
+    list_filter = ('is_chosen',)

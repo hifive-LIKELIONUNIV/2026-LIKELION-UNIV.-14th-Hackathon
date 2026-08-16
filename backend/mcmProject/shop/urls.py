@@ -22,5 +22,11 @@ urlpatterns = [
     path('capture/<int:selection_id>/era/<str:era>/generate/', views.era_generate, name='era_generate'),
     path('capture/<int:selection_id>/era/<str:era>/result/', views.era_result, name='era_result'),
     path('capture/<int:selection_id>/era/<str:era>/regenerate/', views.era_regenerate, name='era_regenerate'),
+
+    path('capture/<int:selection_id>/era/2026/capture/', views.era_2026_capture, name='era_2026_capture'),
+    path('capture/<int:selection_id>/era/2026/capture/save/', views.era_2026_capture_save, name='era_2026_capture_save'),
+
     path('capture/<int:selection_id>/passport/', views.passport_result, name='passport_result'),
+    path('capture/<int:selection_id>/passport/download/', views.passport_download, name='passport_download'),
+    path('capture/<int:selection_id>/passport/qrcode/', views.passport_qrcode, name='passport_qrcode'),
 ]

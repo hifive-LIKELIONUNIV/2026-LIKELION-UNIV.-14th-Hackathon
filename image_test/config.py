@@ -5,17 +5,17 @@
 
 references/
 ├── bag1/
-│   ├── 1976.png
-│   ├── 2005.png
-│   └── 2016.png
+│   ├── 1976-1.png
+│   ├── 2005-1.png
+│   └── 2016-1.png
 ├── bag2/
-│   ├── 1976.png
-│   ├── 2005.png
-│   └── 2016.png
+│   ├── 1976-2.png
+│   ├── 2005-2.png
+│   └── 2016-2.png
 └── bag3/
-    ├── 1976.png
-    ├── 2005.png
-    └── 2016.png
+    ├── 1976-3.png
+    ├── 2005-3.png
+    └── 2016-3.png
 """
 
 import os
@@ -51,5 +51,7 @@ ERAS = {
 
 
 def reference_image_path(base_dir: str, bag_id: str, era: str) -> str:
-    """base_dir(스크립트 위치) 기준으로 레퍼런스 이미지 경로를 반환."""
-    return os.path.join(base_dir, "references", bag_id, f"{era}.png")
+    """base_dir(스크립트 위치) 기준으로 레퍼런스 이미지 경로를 반환.
+    실제 파일명이 '1976-1.png'처럼 bag 번호 접미사가 붙어있어 bag_id 끝자리를 붙여줌."""
+    bag_num = bag_id[-1]  # "bag1" -> "1"
+    return os.path.join(base_dir, "references", bag_id, f"{era}-{bag_num}.png")

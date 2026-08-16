@@ -33,7 +33,9 @@ SECRET_KEY = 'django-insecure--8g)@80b3b86-*zh0l4=^))9bj0d@9d9swo+66^ve79wl=#%uv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 개발용 설정 — 로컬 네트워크(휴대폰 QR 테스트 등)에서 어떤 호스트로 접속해도 허용.
+# DEBUG=True인 동안만 쓰는 값이라 지금은 괜찮지만, 실제 배포 시에는 실제 도메인/IP로 좁혀야 함.
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

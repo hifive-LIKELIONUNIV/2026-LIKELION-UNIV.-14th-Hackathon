@@ -13,27 +13,76 @@ from django.core.files.base import ContentFile
 from openai import OpenAI
 
 from .constants import ERA_META
+from .face_utils import detect_face_height_ratio
 from .models import EraReference, PersonaResult
 
 MODEL = "gpt-image-2"
 
+# 감지된 원본 얼굴 비율보다 이 정도 배율만큼 작게 지정 (여전히 크다는 피드백으로 0.9 -> 0.8 -> 0.7로 축소)
+FACE_SIZE_SHRINK_FACTOR = 0.7
 
-def build_prompt(bag_name: str, era: str) -> str:
+
+def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=None) -> str:
     meta = ERA_META[era]
+
+    if ref_face_ratio is not None:
+        original_pct = round(ref_face_ratio * 100)
+        target_pct = round(ref_face_ratio * FACE_SIZE_SHRINK_FACTOR * 100)
+        size_instruction = (
+            f"As a concrete size reference: in Image 2, the original face occupies approximately "
+            f"{original_pct}% of the image height. Size the replaced face to approximately {target_pct}% "
+            "of the image height — slightly smaller than the original, not larger, and not an exact 1:1 match. "
+            "This size must also stay proportionate to the body and frame of the person in Image 2 — the face "
+            "should look like it naturally belongs to that person's build (a larger frame should carry a "
+            "proportionally larger face, a slighter frame a proportionally smaller face), not a face pasted at "
+            "a fixed size regardless of the body underneath it. Also preserve the natural neck length shown in "
+            "Image 2 — keep the same distance between the chin and the shoulders/collar as in Image 2. Do not "
+            "compress, shorten, or hide the neck when fitting the new face in; a too-short neck is a common "
+            "mistake to avoid here."
+        )
+    else:
+        size_instruction = (
+            "Size the replaced face slightly smaller than the head size shown in Image 2, not an exact "
+            "1:1 match, and keep it proportionate to the body and frame of the person in Image 2 so it looks "
+            "like it naturally belongs to that person's build, not a face pasted at a fixed size. Also preserve "
+            "the natural neck length shown in Image 2 — keep the same distance between the chin and the "
+            "shoulders/collar as in Image 2, and do not compress or shorten the neck when fitting the new face in."
+        )
+
+    detail_block = f"\n\nAdditional details to emphasize for this bag and era: {detail_prompt.strip()}" if detail_prompt else ""
+
     return (
-        f"Image 1: a photo of a person (identity reference), to be shown carrying a {bag_name}.\n"
-        f"Image 2: a style/scene reference photo representing the mood of {meta['label']} - {meta['mood']}.\n\n"
-        f"Generate a photorealistic photo where the person from Image 1 appears naturally in the "
-        f"setting, era, and atmosphere shown in Image 2 ({meta['label']}). "
-        "Do not change the person's face, facial features, skin tone, or identity in any way. "
-        "Preserve their exact likeness, expression, and body proportions from Image 1. "
-        "Do NOT copy body shape, pose, or gender presentation from Image 2 - only use Image 2 for "
-        "clothing style, color palette, lighting, and background atmosphere. "
-        f"The person should be naturally carrying or wearing the {bag_name}. "
-        "Use natural, believable photographic lighting, not an overly stylized or cinematic look. "
-        "Subtly reflect MCM's signature cognac brown color in the clothing or an accessory if it fits naturally.\n\n"
-        "Constraints: preserve identity and facial geometry exactly, no watermark, no extra text, "
-        "no logos or trademarks, no unrelated added elements."
+        "Image 1: a reference photo of a person's face and hairstyle (identity source).\n"
+        f"Image 2: the target photo — a {meta['label']} era MCM photo already showing the {bag_name}, with the "
+        f"following mood/atmosphere: {meta['mood']}. Reproduce Image 2's composition, background, clothing, "
+        "pose, body, and bag with maximum fidelity. Only the face and hairstyle should change.\n\n"
+        "MOST IMPORTANT REQUIREMENT — head angle: first, look carefully at exactly how the head is turned, "
+        "tilted, and rotated in Image 2 (for example: turned to the left or right, chin up or down, "
+        "three-quarter view, profile, or straight-on). The replaced face and hair must be drawn at that exact "
+        "same head angle and rotation, in 3D perspective consistent with Image 2's camera viewpoint — never "
+        "render the new face flat or straight-on if the head in Image 2 is turned or tilted. Getting this head "
+        "angle right matters more than any other part of this edit; a face at the wrong angle will look pasted "
+        "on and fake even if everything else is correct.\n\n"
+        "Task: replace the face AND the hairstyle of the person in Image 2 with the face and hairstyle "
+        f"from Image 1, at the head angle described above. {size_instruction} Blend the new face and hair into "
+        "Image 2 so the skin tone, lighting direction, color grading, and film grain match Image 2 "
+        "seamlessly — the result should look like one single, untouched photograph, not a collage. "
+        "Apply the same era-appropriate photo filter as the rest of Image 2 to the replaced face and hair as "
+        "well — matching color grading, contrast, saturation, film grain, and overall mood/atmosphere — so the "
+        "face does not look like a crisp modern photo pasted onto an older or differently toned image; the "
+        "filter must be consistent across the entire photo, face included.\n\n"
+        "Preserve the facial identity, bone structure, and distinctive features from Image 1 exactly, and "
+        "preserve Image 1's hairstyle (length, texture, color, and style) exactly.\n\n"
+        "Do NOT change anything else in Image 2: keep the exact same body shape, pose, and background as "
+        "shown. Reproduce the outfit's fabric texture and color exactly, and reproduce the bag exactly as it "
+        "appears in Image 2 — same shape, same monogram/pattern, same hardware, same stitching and material "
+        "texture, with no simplification or redesign of any of these details."
+        f"{detail_block}\n\n"
+        "Constraints: head angle must match Image 2 exactly (see above — this is the top priority), seamless "
+        "blending at the face/hair boundary (no visible seams, no mismatched edges), photorealistic result, "
+        "consistent color grading/filter across the whole image including the face, no watermark, no extra "
+        "text, no new logos or trademarks beyond what is already visible in Image 2, no unrelated added "
+        "elements."
     )
 
 
@@ -75,7 +124,15 @@ def generate_result(result: PersonaResult) -> PersonaResult:
         raise RuntimeError("OPENAI_API_KEY가 설정되어 있지 않습니다. 저장소 루트 .env를 확인하세요.")
 
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
-    prompt = build_prompt(selection.product.name, result.era)
+
+    # 레퍼런스 사진에서 얼굴 크기 비율을 감지해서 프롬프트에 구체적인 힌트로 넣어줌.
+    # 감지 실패해도(얼굴 인식 안 됨 등) 생성 자체는 막지 않고 일반 문구로 대체
+    try:
+        ref_face_ratio = detect_face_height_ratio(reference.image.path)
+    except Exception:
+        ref_face_ratio = None
+
+    prompt = build_prompt(selection.product.name, result.era, ref_face_ratio, reference.detail_prompt)
 
     # openai SDK가 bytes/io.IOBase/PathLike/tuple만 받기 때문에
     # Django의 FieldFile을 그대로 넘기면 안 되고, 실제 파일 경로를 open()으로 열어서 넘겨야 함
