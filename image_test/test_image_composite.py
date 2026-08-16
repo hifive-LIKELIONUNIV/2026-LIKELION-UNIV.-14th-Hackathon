@@ -1,5 +1,6 @@
 """
-gpt-image-1 얼굴사진 + 레퍼런스사진 합성 테스트 스크립트
+gpt-image-2 얼굴사진 + 레퍼런스사진 합성 테스트 스크립트
+(gpt-image-1 접근이 막혀있어 별도 모델인 gpt-image-2로 우선 테스트)
 
 목적: 텍스트 프롬프트만으로 시대/스타일을 설명하는 대신,
      실제 레퍼런스 사진(그 시대 분위기의 사진)을 함께 입력해서
@@ -28,13 +29,31 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))  # 스크립트 폴더 기준으로 
 FACE_IMAGE_PATH = os.path.join(BASE_DIR, "face_photo.png")
 REFERENCE_IMAGE_PATH = os.path.join(BASE_DIR, "reference_photo.png")
 OUTPUT_IMAGE_PATH = os.path.join(BASE_DIR, "result_composite.png")
-MODEL = "gpt-image-1"
 
+# gpt-image-1 접근이 막혀있다면 gpt-image-2로 먼저 테스트해볼 것
+# (별도 모델이라 접근 권한 버킷이 다를 수 있음. OpenAI 공식 가이드 기준 신규 빌드 권장 모델)
+MODEL = "gpt-image-2"
+
+# OpenAI 공식 프롬프팅 가이드의 "Insert the Person Into a Scene" /
+# "Virtual Clothing Try-On" 패턴을 따라 재작성:
+# - Image 1 / Image 2를 인덱스로 명시적으로 참조
+# - "무엇을 유지할지"와 "무엇을 바꿀지"를 분리해서 명시
+# - photorealistic, 자연광 등 사실적 사진 키워드 포함
 PROMPT = (
-    "첫 번째 이미지 속 인물의 얼굴 특징(눈, 코, 입, 얼굴형)을 최대한 그대로 유지하면서, "
-    "두 번째 이미지의 시대적 분위기, 배경, 색감, 스타일링을 그 인물에게 자연스럽게 입혀줘. "
-    "결과물은 마치 그 인물이 실제로 두 번째 사진과 같은 시대·장소에 있었던 것처럼 자연스러워야 해. "
-    "MCM 브랜드의 꼬냑 브라운 컬러 톤을 의상이나 소품 중 한 곳에 은은하게 반영해줘."
+    "Image 1: a photo of a person (identity reference). "
+    "Image 2: a style/scene reference photo representing a 1980s Hongdae street mood in Seoul. "
+    "\n\n"
+    "Generate a photorealistic photo where the person from Image 1 appears naturally in the "
+    "setting, era, and atmosphere shown in Image 2. "
+    "Do not change the person's face, facial features, skin tone, or identity in any way. "
+    "Preserve their exact likeness, expression, and proportions from Image 1. "
+    "Apply the clothing style, hairstyle, lighting, color grading, and background atmosphere "
+    "from Image 2 so it looks like a real photograph taken in that era and place, not an "
+    "overly stylized or cinematic image. Use natural, believable photographic lighting. "
+    "Subtly reflect MCM's signature cognac brown color in the clothing or an accessory. "
+    "\n\n"
+    "Constraints: preserve identity and facial geometry exactly, no watermark, no extra text, "
+    "no logos or trademarks, no unrelated added elements."
 )
 
 
@@ -62,6 +81,9 @@ def run_test():
                 image=[face_file, ref_file],   # 여러 장 입력 (최대 16장 지원)
                 prompt=PROMPT,
                 size="1024x1024",
+                quality="medium",  # low/medium/high — 얼굴 디테일이 중요하니 medium 이상 권장
+                # gpt-image-2는 항상 고화질 출력이라 input_fidelity 파라미터를 지원하지 않음
+                # (gpt-image-1/1.5로 되돌릴 경우에만 input_fidelity="high" 추가)
             )
 
         result = response.data[0]
