@@ -18,7 +18,8 @@
     </div>
 
     <!-- 2단계: 카메라 화면. 권한 허용되면 자동으로 표시되고,
-         첫 촬영만 '촬영하기' 버튼으로 시작하며, 두 번째 촬영은 버튼 없이 바로 이어서 진행됨 -->
+         첫 촬영만 '촬영하기' 버튼으로 시작하며, 두 번째 촬영은 버튼 없이
+         3초 간격을 둔 뒤 자동으로 이어서 진행됨 -->
     <div id="camera-screen" style="display:none;">
         <h1>얼굴을 인식해주세요.</h1>
         <div style="position:relative; width:300px; height:400px;">
@@ -49,6 +50,7 @@
         let photoCount = {{ photo_count }};
         let stream = null;
         let countdownTimer = null;
+        let nextShotTimer = null;
         let inCameraStep = false;
 
         function getCookie(name) {
@@ -70,6 +72,10 @@
             if (countdownTimer) {
                 clearInterval(countdownTimer);
                 countdownTimer = null;
+            }
+            if (nextShotTimer) {
+                clearTimeout(nextShotTimer);
+                nextShotTimer = null;
             }
             countdownEl.style.display = 'none';
         }
@@ -184,8 +190,12 @@
                     inCameraStep = false;
                     window.location.href = `/shop/capture/${selectionId}/choose/`;
                 } else {
-                    // 2번째 촬영은 버튼 없이 바로 카운트다운 이어서 진행
-                    startCountdown();
+                    // 2번째 촬영은 버튼 없이, 3초 간격을 둔 뒤 바로 카운트다운 이어서 진행
+                    statusText.textContent = '잠시 후 다음 촬영이 시작됩니다...';
+                    nextShotTimer = setTimeout(() => {
+                        nextShotTimer = null;
+                        startCountdown();
+                    }, 3000);
                 }
             })
             .catch(err => {

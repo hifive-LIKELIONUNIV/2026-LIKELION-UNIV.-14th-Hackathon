@@ -240,6 +240,11 @@ def era_result(request, selection_id, era):
     if result.status != 'done':
         return redirect('shop:era_loading', selection_id=selection.id, era=era)
 
+    # "다시 생성"은 했는데 기존/새 사진 중 아직 고르지 않은 후보가 남아있으면
+    # (새로고침, 뒤로가기 등으로 선택 화면을 벗어난 경우) 선택 화면으로 되돌림
+    if result.regen_candidate_image:
+        return redirect('shop:era_regen_choose', selection_id=selection.id, era=era)
+
     context = {
         'selection': selection,
         'result': result,
@@ -255,7 +260,10 @@ def era_result(request, selection_id, era):
 
 @require_POST
 def era_regenerate(request, selection_id, era):
-    """'다시 생성' — 시대당 1회만 허용, 서버에서 강제."""
+    """'다시 생성' — 시대당 1회만 허용, 서버에서 강제.
+
+    기존 generated_image는 건드리지 않고 regen_candidate_image에 새 이미지를 만들어둔 뒤,
+    사용자가 둘 중 하나를 고르는 선택 화면(era_regen_choose)으로 보낸다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     result = get_object_or_404(PersonaResult, selection=selection, era=era)
 
@@ -271,7 +279,7 @@ def era_regenerate(request, selection_id, era):
     result.save()
 
     try:
-        ai_service.generate_result(result)
+        ai_service.generate_result(result, target_field='regen_candidate_image')
     except Exception as e:
         print(f"[era_regenerate 실패] selection={selection.id} era={era}: {e}")
         result.status = previous_status
@@ -286,7 +294,56 @@ def era_regenerate(request, selection_id, era):
 
     return JsonResponse({
         'success': True,
-        'image_url': result.generated_image.url,
+        'redirect': reverse('shop:era_regen_choose', args=[selection.id, era]),
+    })
+
+
+def era_regen_choose(request, selection_id, era):
+    """'다시 생성' 직후, 기존 사진과 새로 생성된 사진 중 하나를 고르는 화면."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    result = get_object_or_404(PersonaResult, selection=selection, era=era)
+
+    if not result.regen_candidate_image:
+        # 고를 후보가 없으면(직접 URL 접근 등) 결과 화면으로 되돌림
+        return redirect('shop:era_result', selection_id=selection.id, era=era)
+
+    context = {
+        'selection': selection,
+        'result': result,
+        'era': era,
+        'era_meta': ERA_META[era],
+    }
+    return render(request, 'shop/era_regen_choose.html', context)
+
+
+@require_POST
+def era_regen_confirm(request, selection_id, era):
+    """선택 화면에서 최종적으로 고른 사진을 결과(generated_image)에 반영."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    result = get_object_or_404(PersonaResult, selection=selection, era=era)
+
+    choice = request.POST.get('choice')
+    if choice not in ('original', 'candidate'):
+        return JsonResponse({'error': '잘못된 선택입니다.'}, status=400)
+
+    if choice == 'candidate':
+        if not result.regen_candidate_image:
+            return JsonResponse({'error': '선택할 수 있는 사진이 없습니다.'}, status=400)
+        with result.regen_candidate_image.open('rb') as f:
+            result.generated_image.save(
+                f"result_{selection.id}_{era}.png",
+                ContentFile(f.read()),
+                save=False,
+            )
+
+    # 어떤 걸 골랐든 후보 이미지는 정리
+    if result.regen_candidate_image:
+        result.regen_candidate_image.delete(save=False)
+    result.save()
+
+    return JsonResponse({
+        'success': True,
+        'redirect': reverse('shop:era_result', args=[selection.id, era]),
     })
 
 

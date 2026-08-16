@@ -83,6 +83,9 @@ class PersonaResult(models.Model):
     )
     era = models.CharField(max_length=4, choices=ERA_CHOICES)
     generated_image = models.ImageField(upload_to='persona_results/', blank=True, null=True)
+    # "다시 생성"으로 새로 만든 후보 이미지. 사용자가 기존/새 사진 중 하나를 고르기 전까지
+    # generated_image는 건드리지 않고 여기에만 임시로 저장해둔다.
+    regen_candidate_image = models.ImageField(upload_to='persona_results/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     regenerated = models.BooleanField(default=False)  # "다시 생성"은 시대당 1회만 허용
     created_at = models.DateTimeField(auto_now_add=True)

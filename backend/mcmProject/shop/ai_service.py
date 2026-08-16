@@ -86,10 +86,14 @@ def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=Non
     )
 
 
-def generate_result(result: PersonaResult) -> PersonaResult:
+def generate_result(result: PersonaResult, target_field: str = 'generated_image') -> PersonaResult:
     """
     result.selection에서 선택된 촬영 사진 + result.era에 맞는 EraReference를 gpt-image-2로 합성해서
-    result.generated_image에 저장하고 status='done'으로 갱신한다.
+    result의 target_field(기본 generated_image)에 저장하고 status='done'으로 갱신한다.
+
+    target_field='regen_candidate_image'로 넘기면 "다시 생성" 후보 이미지 용도로,
+    기존 generated_image는 건드리지 않고 별도 필드에만 저장한다
+    (사용자가 기존/새 사진 중 하나를 고를 때까지 결과 화면에 반영되지 않게 하기 위함).
 
     2026(현재)은 합성 없이 선택된 촬영 사진을 그대로 결과로 사용한다.
 
@@ -103,7 +107,7 @@ def generate_result(result: PersonaResult) -> PersonaResult:
 
     if result.era == '2026':
         with open(chosen_photo.image.path, 'rb') as f:
-            result.generated_image.save(
+            getattr(result, target_field).save(
                 f"result_{selection.id}_2026.png",
                 ContentFile(f.read()),
                 save=False,
@@ -149,8 +153,9 @@ def generate_result(result: PersonaResult) -> PersonaResult:
     if not getattr(data, "b64_json", None):
         raise RuntimeError("응답에서 이미지 데이터를 찾을 수 없습니다.")
 
-    result.generated_image.save(
-        f"result_{selection.id}_{result.era}.png",
+    filename_suffix = '' if target_field == 'generated_image' else f'_{target_field}'
+    getattr(result, target_field).save(
+        f"result_{selection.id}_{result.era}{filename_suffix}.png",
         ContentFile(base64.b64decode(data.b64_json)),
         save=False,
     )

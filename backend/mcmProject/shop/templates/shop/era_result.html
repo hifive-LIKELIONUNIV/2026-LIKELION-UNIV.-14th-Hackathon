@@ -67,7 +67,6 @@
         const regenBar = document.getElementById('regen-progress-bar');
         const regenText = document.getElementById('regen-progress-text');
         const regenErrorText = document.getElementById('regen-error-text');
-        const resultImage = document.getElementById('result-image');
 
         function getCookie(name) {
             const value = `; ${document.cookie}`;
@@ -124,11 +123,12 @@
                         showRegenError(data.error);
                         return;
                     }
+                    // 새로 생성된 사진이 바로 결과에 반영되는 게 아니라,
+                    // 기존/새 사진 중 하나를 고르는 선택 화면으로 이동
                     regenBar.style.width = '100%';
                     regenText.textContent = '100%';
                     setTimeout(() => {
-                        resultImage.src = data.image_url + '?t=' + Date.now();
-                        overlay.style.display = 'none';
+                        window.location.href = data.redirect;
                     }, 400);
                 })
                 .catch(err => {
