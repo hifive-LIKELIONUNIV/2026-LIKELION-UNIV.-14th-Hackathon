@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, CartItem, PersonaSelection, PersonaResult, CapturedPhoto
+from .models import Product, CartItem, PersonaSelection, PersonaResult, CapturedPhoto, EraReference
 
 
 @admin.register(Product)
@@ -24,5 +24,11 @@ class PersonaSelectionAdmin(admin.ModelAdmin):
 
 @admin.register(PersonaResult)
 class PersonaResultAdmin(admin.ModelAdmin):
-    list_display = ('selection', 'era', 'status', 'created_at', 'updated_at')
+    list_display = ('selection', 'era', 'status', 'regenerated', 'created_at', 'updated_at')
     list_filter = ('era', 'status')
+
+
+@admin.register(EraReference)
+class EraReferenceAdmin(admin.ModelAdmin):
+    list_display = ('product', 'era')
+    list_filter = ('era', 'product')

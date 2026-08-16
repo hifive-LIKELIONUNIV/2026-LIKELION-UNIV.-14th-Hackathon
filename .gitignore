@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+__pycache__/
+*.pyc
+
+myvenv/
+venv/
+
+# 테스트/생성용 이미지는 제외 (레퍼런스 자산은 포함되어야 하므로 폴더 단위로 지정)
+image_test/face_photo.png
+image_test/result_*.png
+image_test/results/
+backend/mcmProject/media/captured_photos/
+backend/mcmProject/media/persona_results/

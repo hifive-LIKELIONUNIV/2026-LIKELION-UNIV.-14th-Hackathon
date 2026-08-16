@@ -84,14 +84,41 @@ class PersonaResult(models.Model):
     era = models.CharField(max_length=4, choices=ERA_CHOICES)
     generated_image = models.ImageField(upload_to='persona_results/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    regenerated = models.BooleanField(default=False)  # "다시 생성"은 시대당 1회만 허용
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['era']
-        unique_together = ('selection', 'era')  
+        unique_together = ('selection', 'era')
     def __str__(self):
         return f"{self.selection} - {self.era} ({self.status})"
+
+
+class EraReference(models.Model):
+    """가방(Product)별 시대 합성에 쓰이는 레퍼런스 이미지 (관리자 페이지에서 업로드).
+    2026(현재)은 합성이 아니라 촬영 사진을 그대로 쓰므로 레퍼런스가 필요 없음."""
+
+    ERA_CHOICES = [
+        ('1976', '1976'),
+        ('2005', '2005'),
+        ('2016', '2016'),
+    ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='era_references'
+    )
+    era = models.CharField(max_length=4, choices=ERA_CHOICES)
+    image = models.ImageField(upload_to='era_references/')
+
+    class Meta:
+        unique_together = ('product', 'era')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.era}"
+
 
 class CapturedPhoto(models.Model):
     """웹캠으로 촬영된 사진 (선택 전 후보, 2장)"""

@@ -7,7 +7,7 @@
 <body>
     <button id="back-btn">이전</button>
 
-    <!-- 1단계: 대기 화면 -->
+    <!-- 1단계: 카메라 권한/로딩 대기 화면 -->
     <div id="idle-screen">
         <h1>얼굴을 인식해주세요</h1>
         <div style="width:300px; height:335px; border:1px solid #444; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -15,10 +15,10 @@
             <p>카메라 활성화 중</p>
         </div>
         <p>촬영된 얼굴 이미지는 TIME PORTAL 체험 이미지 생성에만 사용됩니다.</p>
-        <button id="start-btn">촬영하기</button>
     </div>
 
-    <!-- 2단계: 웹캠 활성화 + 자동 촬영 화면 (처음엔 숨김) -->
+    <!-- 2단계: 카메라 화면. 권한 허용되면 자동으로 표시되고,
+         매 촬영(1번째/2번째) 전에 '촬영하기' 버튼이 다시 노출됨 -->
     <div id="camera-screen" style="display:none;">
         <h1>얼굴을 인식해주세요.</h1>
         <div style="position:relative; width:300px; height:335px;">
@@ -29,6 +29,7 @@
         </div>
         <p id="progress">0 / 2</p>
         <p id="status-text">촬영 가능 횟수</p>
+        <button id="start-btn" style="display:none;">촬영하기</button>
     </div>
 
     <canvas id="canvas" width="600" height="670" style="display:none;"></canvas>
@@ -48,7 +49,6 @@
         let photoCount = {{ photo_count }};
         let stream = null;
         let countdownTimer = null;
-        let nextShotTimer = null;
         let inCameraStep = false;
 
         function getCookie(name) {
@@ -57,16 +57,9 @@
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
-        // 상단 이전 버튼: 카메라 단계면 대기화면 복귀, 아니면 이전 페이지로
         backBtn.addEventListener('click', () => {
-            if (inCameraStep) {
-                stopCameraAndTimers();
-                cameraScreen.style.display = 'none';
-                idleScreen.style.display = 'block';
-                inCameraStep = false;
-            } else {
-                window.history.back();
-            }
+            stopCameraAndTimers();
+            window.history.back();
         });
 
         function stopCameraAndTimers() {
@@ -78,15 +71,12 @@
                 clearInterval(countdownTimer);
                 countdownTimer = null;
             }
-            if (nextShotTimer) {
-                clearTimeout(nextShotTimer);
-                nextShotTimer = null;
-            }
             countdownEl.style.display = 'none';
         }
 
-        // 1단계 → 2단계: 웹캠 켜고, 자동으로 전체 촬영 시퀀스 시작
-        startBtn.addEventListener('click', () => {
+        // 페이지 진입 시 바로 카메라 권한 요청 + 미리보기 시작
+        // (아직 촬영은 시작하지 않음 — '촬영하기' 버튼을 눌러야 카운트다운이 시작됨)
+        function initCamera() {
             navigator.mediaDevices.getUserMedia({
                 video: {
                     width: { ideal: 600 },
@@ -99,16 +89,26 @@
                     idleScreen.style.display = 'none';
                     cameraScreen.style.display = 'block';
                     inCameraStep = true;
-                    startCountdown();
+                    showStartButton();
                 })
                 .catch(err => {
                     alert('웹캠 접근에 실패했습니다: ' + err.message);
                 });
+        }
+
+        function showStartButton() {
+            statusText.textContent = '촬영 가능 횟수';
+            startBtn.style.display = 'inline-block';
+        }
+
+        // '촬영하기' 클릭 -> 카운트다운 시작 (1번째, 2번째 촬영 모두 이 버튼을 거침)
+        startBtn.addEventListener('click', () => {
+            startBtn.style.display = 'none';
+            startCountdown();
         });
 
         // 카운트다운 후 자동 캡처
         function startCountdown() {
-            statusText.textContent = '';
             let count = 5;
             countdownEl.style.display = 'flex';
             countdownEl.textContent = count;
@@ -144,6 +144,7 @@
             .then(data => {
                 if (data.error) {
                     alert(data.error);
+                    showStartButton(); // 실패했으면 다시 촬영할 수 있게 버튼 복구
                     return;
                 }
 
@@ -155,14 +156,17 @@
                     inCameraStep = false;
                     window.location.href = `/shop/capture/${selectionId}/choose/`;
                 } else {
-                    statusText.textContent = '촬영 가능 횟수';
-                    nextShotTimer = setTimeout(startCountdown, 800);
+                    // 2번째 촬영도 자동 시작하지 않고 '촬영하기' 버튼을 다시 보여줌
+                    showStartButton();
                 }
             })
             .catch(err => {
                 alert('저장 실패: ' + err.message);
+                showStartButton();
             });
         }
+
+        initCamera();
     </script>
 </body>
 </html>

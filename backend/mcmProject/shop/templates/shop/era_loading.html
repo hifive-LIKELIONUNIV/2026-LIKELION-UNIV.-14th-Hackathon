@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ era_meta.label }}년으로 이동 중</title>
+</head>
+<body>
+    <h1>{{ era_meta.label }}년으로 이동하고 있습니다...</h1>
+
+    <div style="width:400px; height:8px; background:#333; border-radius:4px; overflow:hidden;">
+        <div id="progress-bar" style="width:0%; height:100%; background:#c98a4b; transition: width 0.2s linear;"></div>
+    </div>
+    <p id="progress-text">0%</p>
+    <p id="hint-text" style="color:#888;"></p>
+
+    <script>
+        const selectionId = {{ selection.id }};
+        const era = "{{ era }}";
+
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const hintText = document.getElementById('hint-text');
+
+        // 예상 소요시간(ms) — 실측 평균에 맞춰 조정할 것
+        const EXPECTED_DURATION = 18000;
+        const CAP = 92; // 실제 완료 신호 오기 전까지 도달 가능한 최대 %
+        const MIN_VISIBLE_MS = 1500; // 너무 빨리 끝나도 최소 이 시간은 진행률을 보여줌
+        const startTime = Date.now();
+
+        let finished = false;
+        let tickTimer = null;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function updateProgress() {
+            if (finished) return;
+            const elapsed = Date.now() - startTime;
+            // 지수적으로 CAP%에 점근 -> 평소엔 예상시간 근처에서 90%대,
+            // 오래 걸려도 완료 전까지 아주 천천히 계속 올라감 (멈춘 것처럼 안 보이게)
+            const pct = CAP * (1 - Math.exp(-elapsed / EXPECTED_DURATION));
+            progressBar.style.width = pct.toFixed(0) + '%';
+            progressText.textContent = pct.toFixed(0) + '%';
+
+            if (elapsed > EXPECTED_DURATION * 1.3) {
+                hintText.textContent = '조금만 더 기다려주세요...';
+            }
+        }
+
+        function finishProgress(onDone) {
+            finished = true;
+            clearInterval(tickTimer);
+            progressBar.style.transition = 'width 0.4s ease-out';
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            setTimeout(onDone, 400);
+        }
+
+        tickTimer = setInterval(updateProgress, 200);
+
+        fetch(`/shop/capture/${selectionId}/era/${era}/generate/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                clearInterval(tickTimer);
+                alert('생성에 실패했습니다: ' + data.error);
+                return;
+            }
+            // 실제 응답이 너무 빨리 와도 최소 노출 시간만큼은 기다렸다가 100%로 마무리
+            const elapsed = Date.now() - startTime;
+            const minWait = Math.max(0, MIN_VISIBLE_MS - elapsed);
+            setTimeout(() => {
+                finishProgress(() => {
+                    window.location.href = data.redirect;
+                });
+            }, minWait);
+        })
+        .catch(err => {
+            clearInterval(tickTimer);
+            alert('요청 중 오류가 발생했습니다: ' + err.message);
+        });
+    </script>
+</body>
+</html>
