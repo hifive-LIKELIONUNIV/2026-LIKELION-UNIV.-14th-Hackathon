@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TIME PORTAL</title>
+</head>
+<body>
+    <h1>TIME PORTAL</h1>
+    <p>이제 어떤 여정을 이어가시겠어요?</p>
+
+    <form method="post" action="{% url 'shop:finish_selection' selection.id %}">
+        {% csrf_token %}
+        <button type="submit" name="mode" value="alone">혼자 자유롭게 둘러볼게요</button>
+        <button type="submit" name="mode" value="with_staff">직원과 함께 둘러볼게요</button>
+    </form>
+</body>
+</html>

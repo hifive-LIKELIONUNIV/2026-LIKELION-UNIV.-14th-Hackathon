@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TIME PORTAL</title>
+</head>
+<body>
+    <h1>TIME PORTAL</h1>
+    <p>함께한 가방과 잘 어울리거나 비슷한 상품들이에요</p>
+
+    {% for product in products %}
+        <div>
+            <img src="{{ product.image.url }}" width="200">
+            <p>{{ product.name }}</p>
+            <button type="button" onclick="toggleDetail({{ product.id }})">자세히 보기</button>
+            <button type="button" onclick="addToCart({{ product.id }})">+ 장바구니 담기</button>
+
+            <div id="detail-{{ product.id }}" style="display:none;">
+                <p>{{ product.subtitle }}</p>
+                <p>{{ product.description }}</p>
+            </div>
+        </div>
+    {% endfor %}
+
+    <a href="{% url 'shop:finish_selection' selection.id %}">다음 단계로</a>
+
+    <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function toggleDetail(productId) {
+            const el = document.getElementById(`detail-${productId}`);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addToCart(productId) {
+            fetch(`/shop/cart/add/${productId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                alert('장바구니에 담았습니다.');
+            });
+        }
+    </script>
+</body>
+</html>

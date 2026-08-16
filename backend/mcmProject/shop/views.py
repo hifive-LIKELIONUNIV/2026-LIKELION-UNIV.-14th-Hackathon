@@ -118,5 +118,45 @@ def choose_photo(request, selection_id):
     chosen_photo.is_chosen = True
     chosen_photo.save()
 
-    # 임시로 완료 표시
     return redirect('shop:select_bag_done')
+
+
+def finish_selection(request, selection_id):
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+
+    if request.method == 'POST':
+        mode = request.POST.get('mode')  
+
+        if mode == 'with_staff':
+            pass
+
+        return redirect('onboarding')
+
+    return render(request, 'shop/finish.html', {'selection': selection})
+
+def recommend_products(request, selection_id):
+    """선택한 가방에 고정으로 매핑된 추천 상품 보여주기"""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+
+    recommended_products = selection.product.recommended_products.all()[:4]
+
+    context = {
+        'selection': selection,
+        'products': recommended_products,
+    }
+    return render(request, 'shop/recommend_products.html', context)
+
+
+@require_POST
+def add_to_cart(request, product_id):
+    """추천 상품 장바구니 담기 (로그인 필요)"""
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'error': '로그인이 필요한 기능입니다. 원하시는 상품은 직원에게 알려주세요.'},
+            status=401
+        )
+
+    product = get_object_or_404(Product, id=product_id)
+    CartItem.objects.create(user=request.user, product=product)
+
+    return JsonResponse({'success': True})
