@@ -131,5 +131,9 @@ STATIC_URL = 'static/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
+# 기본값(/accounts/profile/)은 존재하지 않는 URL이라 로그인 직후 404가 남 -> 명시적으로 지정
+LOGIN_REDIRECT_URL = 'shop:select_bag'
+LOGIN_URL = 'login'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
