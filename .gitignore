@@ -37,3 +37,4 @@ image_test/result_*.png
 image_test/results/
 backend/mcmProject/media/captured_photos/
 backend/mcmProject/media/persona_results/
+backend/mcmProject/media/passports/

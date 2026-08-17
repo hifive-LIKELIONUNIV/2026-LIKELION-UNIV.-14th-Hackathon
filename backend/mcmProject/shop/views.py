@@ -5,6 +5,7 @@ import threading
 import qrcode
 from PIL import Image
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import close_old_connections
 from django.http import JsonResponse, Http404, HttpResponse
 from django.urls import reverse
@@ -559,6 +560,28 @@ def _build_passport_grid_image_with_frame(results, frame_path):
     return canvas.convert('RGB')
 
 
+def _get_or_build_passport_image(selection, results):
+    """selection.passport_image에 캐싱된 네컷 합성 이미지를 반환하고, 없으면
+    (또는 파일이 사라졌으면) 새로 만들어서 저장해둔다.
+
+    미리보기 화면 로드, 다운로드 클릭, QR 재스캔 등 여러 번 요청이 와도 매번
+    4장을 다시 열어서 합성하지 않고 한 번 만든 결과를 재사용하기 위함.
+    한 selection의 4개 결과는 passport 화면에 도달한 시점엔 더 이상 바뀌지
+    않으므로(재생성은 그 전에만 가능) 별도 무효화 로직 없이 캐시해도 안전하다."""
+    if selection.passport_image and default_storage.exists(selection.passport_image.name):
+        return selection.passport_image
+
+    canvas = _build_passport_grid_image(results)
+    buffer = io.BytesIO()
+    canvas.save(buffer, format='PNG')
+    selection.passport_image.save(
+        f"passport_{selection.id}.png",
+        ContentFile(buffer.getvalue()),
+        save=True,
+    )
+    return selection.passport_image
+
+
 def passport_preview(request, selection_id):
     """QR코드를 스캔하면 도착하는 미리보기 화면. 사진을 확인한 뒤 '다운로드' 버튼을
     직접 눌러야 다운로드가 시작된다(스캔하자마자 바로 다운로드되던 것에서 변경)."""
@@ -573,7 +596,7 @@ def passport_preview(request, selection_id):
 
 
 def passport_preview_image(request, selection_id):
-    """미리보기 화면에 표시할 네컷 이미지. passport_download와 같은 이미지를 만들지만,
+    """미리보기 화면에 표시할 네컷 이미지. passport_download와 같은 이미지를 재사용하되,
     Content-Disposition을 attachment로 주지 않아서 <img>로 바로 보여줄 수 있다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
@@ -581,11 +604,9 @@ def passport_preview_image(request, selection_id):
     if len(results) < len(ERA_ORDER):
         raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
 
-    canvas = _build_passport_grid_image(results)
-    buffer = io.BytesIO()
-    canvas.save(buffer, format='PNG')
-
-    return HttpResponse(buffer.getvalue(), content_type='image/png')
+    passport_image = _get_or_build_passport_image(selection, results)
+    with passport_image.open('rb') as f:
+        return HttpResponse(f.read(), content_type='image/png')
 
 
 def passport_download(request, selection_id):
@@ -597,11 +618,11 @@ def passport_download(request, selection_id):
     if len(results) < len(ERA_ORDER):
         raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
 
-    canvas = _build_passport_grid_image(results)
-    buffer = io.BytesIO()
-    canvas.save(buffer, format='PNG')
+    passport_image = _get_or_build_passport_image(selection, results)
+    with passport_image.open('rb') as f:
+        data = f.read()
 
-    response = HttpResponse(buffer.getvalue(), content_type='image/png')
+    response = HttpResponse(data, content_type='image/png')
     response['Content-Disposition'] = f'attachment; filename="time_passport_{selection.id}.png"'
     return response
 

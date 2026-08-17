@@ -51,6 +51,10 @@ class PersonaSelection(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # 4개 시대 결과를 합친 네컷 이미지 캐시. 미리보기/다운로드 요청마다 매번 다시
+    # 합성하지 않도록, 한 번 만든 뒤 여기 저장해두고 재사용한다.
+    passport_image = models.ImageField(upload_to='passports/', blank=True, null=True)
+
     class Meta:
         ordering = ['-created_at']
 
