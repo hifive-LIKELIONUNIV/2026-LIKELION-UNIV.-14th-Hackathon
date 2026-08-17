@@ -7,17 +7,33 @@ image_test/generator.py + prompts.py의 로직을 실제 Django 모델
 """
 
 import base64
+import logging
 import threading
+import time
 
 from django.conf import settings
 from django.core.files.base import ContentFile
-from openai import OpenAI
+from openai import (
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+    OpenAI,
+    RateLimitError,
+)
 
 from .constants import ERA_META
 from .face_utils import detect_face_height_ratio
 from .models import EraReference, PersonaResult
 
+logger = logging.getLogger(__name__)
+
 MODEL = "gpt-image-2"
+
+# 재시도 대상: 일시적인 네트워크/서버 문제로 보이는 에러만 (요청 자체가 잘못된
+# BadRequestError, 인증 문제인 AuthenticationError 등은 재시도해도 계속 실패하므로 제외)
+_RETRYABLE_ERRORS = (APIConnectionError, APITimeoutError, InternalServerError, RateLimitError)
+_MAX_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = 2  # 1차 실패 후 2초, 2차 실패 후 4초 대기
 
 # 여러 시대를 동시에 백그라운드로 미리 생성하다 보니, 프로세스 전체에서 실제로
 # OpenAI에 동시에 나가는 이미지 생성 요청 수를 제한해서 rate limit을 피한다.
@@ -61,6 +77,32 @@ def _get_ref_face_ratio(reference: EraReference):
     reference.face_height_ratio_computed = True
     reference.save(update_fields=['face_height_ratio', 'face_height_ratio_computed'])
     return ratio
+
+
+def _call_images_edit_with_retry(client, face_path, ref_path, prompt):
+    """OpenAI images.edit 호출을 감싸서, 네트워크 순단이나 5xx/rate limit처럼
+    일시적일 가능성이 높은 에러에 한해 짧은 대기 후 최대 _MAX_ATTEMPTS번까지 재시도한다.
+    (요청 자체가 잘못된 경우 등은 재시도해도 의미가 없으므로 즉시 올림)
+    파일은 시도마다 새로 열어야 함 — 이미 한 번 읽은 파일 객체는 재사용할 수 없음."""
+    last_error = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            with open(face_path, 'rb') as face_file, open(ref_path, 'rb') as ref_file:
+                return client.images.edit(
+                    model=MODEL,
+                    image=[face_file, ref_file],
+                    prompt=prompt,
+                    size="1152x1536",  # 3:4 비율
+                    quality="medium",
+                )
+        except _RETRYABLE_ERRORS as exc:
+            last_error = exc
+            logger.warning(
+                "OpenAI images.edit 호출 실패 (시도 %d/%d): %s", attempt, _MAX_ATTEMPTS, exc
+            )
+            if attempt < _MAX_ATTEMPTS:
+                time.sleep(_RETRY_BACKOFF_SECONDS * attempt)
+    raise last_error
 
 
 def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=None, variation_hint=None) -> str:
@@ -199,14 +241,7 @@ def generate_result(result: PersonaResult, target_field: str = 'generated_image'
     # 세마포어로 실제 API 호출 자체의 동시 실행 개수를 제한 (파일을 열어둔 채로 대기하지
     # 않도록, open()은 세마포어를 획득한 뒤에 함)
     with _GENERATION_SEMAPHORE:
-        with open(chosen_photo.image.path, 'rb') as face_file, open(reference.image.path, 'rb') as ref_file:
-            response = client.images.edit(
-                model=MODEL,
-                image=[face_file, ref_file],
-                prompt=prompt,
-                size="1152x1536",  # 3:4 비율
-                quality="medium",
-            )
+        response = _call_images_edit_with_retry(client, chosen_photo.image.path, reference.image.path, prompt)
 
     data = response.data[0]
     if not getattr(data, "b64_json", None):
