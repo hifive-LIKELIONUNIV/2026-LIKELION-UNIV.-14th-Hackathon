@@ -30,6 +30,10 @@
   box-sizing: border-box;
 }
 
+.login-page__brand {
+  display: none;
+}
+
 .login-page__title.time-portal-title {
   margin: 0 0 4.1667cqw;
 }
@@ -42,46 +46,49 @@
   box-sizing: border-box;
   padding: 4.8611cqw 5.5556cqw 4.1667cqw 5.5556cqw;
   border-radius: 1.3889cqw;
-  background: #232323;
+  background: #2e2a27;
 }
 
 .login-page__field {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
 
-.login-page__label-sr {
+.login-page__placeholder {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  left: 0;
+  top: 0.6944cqw;
+  color: #d9d9d9;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.9444cqw;
+  pointer-events: none;
+}
+
+.login-page__asterisk {
+  color: #c17d3f;
 }
 
 .login-page__input {
   width: 100%;
   box-sizing: border-box;
   border: none;
-  border-bottom: 1px solid #5c5347;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
   background: transparent;
   padding: 0.6944cqw 0;
   color: #fff;
   font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.1806cqw;
+  font-size: 1.9444cqw;
   outline: none;
   transition: border-color 0.2s ease;
 }
 
-.login-page__input::placeholder {
-  color: #8a8378;
+.login-page__input:focus {
+  border-color: #c17d3f;
 }
 
-.login-page__input:focus {
-  border-color: #a26230;
+.login-page__input::-ms-reveal {
+  filter: invert(1);
 }
 
 .login-page__input:-webkit-autofill,
@@ -90,9 +97,9 @@
 .login-page__input:-webkit-autofill:active,
 .login-page__input:autofill {
   -webkit-text-fill-color: #fff !important;
-  -webkit-box-shadow: 0 0 0 1000px #232323 inset !important;
-  box-shadow: 0 0 0 1000px #232323 inset !important;
-  background-color: #232323 !important;
+  -webkit-box-shadow: 0 0 0 1000px #2e2a27 inset !important;
+  box-shadow: 0 0 0 1000px #2e2a27 inset !important;
+  background-color: #2e2a27 !important;
   caret-color: #fff !important;
   transition: background-color 9999s ease-in-out 0s;
 }
@@ -107,12 +114,13 @@
 
 .login-page__submit {
   border: none;
-  border-radius: 0.5556cqw;
+  border-radius: 0.8333cqw;
   padding: 1.25cqw 2.5cqw;
-  background: #a26230;
+  background: #b06a2d;
   color: #fff;
+  text-align: center;
   font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 1.1806cqw;
+  font-size: 1.9444cqw;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -121,7 +129,7 @@
 }
 
 .login-page__submit:hover {
-  background: #8a5228;
+  background: #96591f;
 }
 
 .login-page__submit:active {
@@ -129,7 +137,7 @@
 }
 
 .login-page__guest {
-  margin-top: 2.1528cqw;
+  margin-top: 3.4722cqw;
   border: none;
   background: none;
   padding: 0;
@@ -150,16 +158,27 @@
 @media (max-width: 660px) {
   .login-page__stage {
     width: 100%;
+    max-width: 393px;
     height: 100svh;
+    max-height: 852px;
     aspect-ratio: auto;
   }
 
   .login-page__content {
-    padding: calc(24px + env(safe-area-inset-top, 0px)) 40px calc(24px + env(safe-area-inset-bottom, 0px));
+    justify-content: flex-start;
+    padding: calc(56px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .login-page__brand {
+    display: block;
+    width: 55px;
+    height: auto;
+    margin: 0 auto 16px;
   }
 
   .login-page__title.time-portal-title {
-    margin: 0 0 24px;
+    margin: 0 0 60px;
+    font-size: 30px;
   }
 
   .login-page__card {
@@ -168,6 +187,11 @@
     gap: 20px;
     padding: 20px;
     border-radius: 10px;
+  }
+
+  .login-page__placeholder {
+    top: 12px;
+    font-size: 15px;
   }
 
   .login-page__input {

@@ -20,7 +20,7 @@ function PhotoEndPage() {
 
   const handleStartTravel = () => {
     if (selectedIndex === null) return
-    navigate('/period/1976', { state: { photo: photos[selectedIndex] } })
+    navigate('/loading-1976', { state: { photo: photos[selectedIndex] } })
   }
 
   return (

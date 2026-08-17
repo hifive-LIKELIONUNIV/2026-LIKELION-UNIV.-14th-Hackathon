@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
 import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
 import './PeriodPage2016.css'
 
 function PeriodPage2016() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [showBagInfo, setShowBagInfo] = useState(false)
 
   const toggleBagInfo = () => {
@@ -18,7 +19,7 @@ function PeriodPage2016() {
   }
 
   const handleNextPeriod = () => {
-    navigate('/period/2026')
+    navigate('/loading-2026', { state: location.state })
   }
 
   return (

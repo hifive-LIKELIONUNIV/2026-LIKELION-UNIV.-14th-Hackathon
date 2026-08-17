@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
-import bgImage from '../../assets/images/image 61.png'
+import bgImage from '../../assets/images/2005 배경원본.png'
 import './LoadingPage2005.css'
 
 function LoadingPage2005() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
@@ -20,12 +23,19 @@ function LoadingPage2005() {
     return () => clearInterval(timer)
   }, [])
 
-  return (
-    <div className="loading-page">
-      <div className="loading-page__stage">
-        <img src={bgImage} className="loading-page__bg" alt="" />
-        <div className="loading-page__overlay" />
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      navigate('/period/2005', { state: location.state })
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [navigate, location.state])
 
+  return (
+    <div className="loading-page loading-page--2005">
+      <img src={bgImage} className="loading-page__bg" alt="" />
+      <div className="loading-page__overlay" />
+
+      <div className="loading-page__stage">
         <div className="loading-page__content">
           <OrbitRing />
 

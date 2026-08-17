@@ -41,7 +41,12 @@
 .bag-page__divider {
   width: 100%;
   height: 1px;
-  background: rgba(162, 98, 48, 0.35);
+  background: linear-gradient(
+    90deg,
+    rgba(162, 98, 48, 0.3) 0%,
+    #a26230 50%,
+    rgba(162, 98, 48, 0.3) 100%
+  );
 }
 
 .bag-page__intro {

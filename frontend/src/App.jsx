@@ -7,6 +7,7 @@ import BagSelectionPageBefore from './pages/BagSelectionPage_before/BagSelection
 import TimeMachinePage from './pages/TimeMachinePage/TimeMachinePage.jsx'
 import LoadingPage1976 from './pages/LoadingPage1976/LoadingPage1976.jsx'
 import LoadingPage2005 from './pages/LoadingPage2005/LoadingPage2005.jsx'
+import LoadingPage2016 from './pages/LoadingPage2016/LoadingPage2016.jsx'
 import LoadingPage2026 from './pages/LoadingPage2026/LoadingPage2026.jsx'
 import FinalPage from './pages/FinalPage/FinalPage.jsx'
 import PhotoPage from './pages/PhotoPage/PhotoPage.jsx'
@@ -30,6 +31,7 @@ function App() {
       <Route path="/timemachine" element={<TimeMachinePage />} />
       <Route path="/loading-1976" element={<LoadingPage1976 />} />
       <Route path="/loading-2005" element={<LoadingPage2005 />} />
+      <Route path="/loading-2016" element={<LoadingPage2016 />} />
       <Route path="/loading-2026" element={<LoadingPage2026 />} />
       <Route path="/final" element={<FinalPage />} />
       <Route path="/photo" element={<PhotoPage />} />

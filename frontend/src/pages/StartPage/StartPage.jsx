@@ -13,10 +13,10 @@ function StartPage() {
 
   return (
     <div className="start-page">
-      <div className="start-page__stage">
-        <img src={bgImage} className="start-page__bg" alt="" />
-        <div className="start-page__overlay" />
+      <img src={bgImage} className="start-page__bg" alt="" />
+      <div className="start-page__overlay" />
 
+      <div className="start-page__stage">
         <div className="start-page__content">
           <div className="start-page__top">
             <OrbitRing />

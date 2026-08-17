@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
+import mcmCrestLogo from '../../assets/images/image 79.png'
 import './LoginPage.css'
 
 function LoginPage() {
@@ -29,18 +30,22 @@ function LoginPage() {
     <div className="login-page">
       <div className="login-page__stage">
         <div className="login-page__content">
+          <img className="login-page__brand" src={mcmCrestLogo} alt="MCM" />
+
           <TimePortalTitle className="login-page__title" />
 
           <form className="login-page__card" onSubmit={handleSubmit} noValidate>
             <div className="login-page__field">
-              <label className="login-page__label-sr" htmlFor="email">
-                이메일 주소*
-              </label>
+              {!email && (
+                <span className="login-page__placeholder" aria-hidden="true">
+                  이메일 주소<span className="login-page__asterisk">*</span>
+                </span>
+              )}
               <input
                 id="email"
                 type="email"
                 className="login-page__input"
-                placeholder="이메일 주소*"
+                aria-label="이메일 주소"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 autoComplete="email"
@@ -51,14 +56,16 @@ function LoginPage() {
             </div>
 
             <div className="login-page__field">
-              <label className="login-page__label-sr" htmlFor="password">
-                비밀번호*
-              </label>
+              {!password && (
+                <span className="login-page__placeholder" aria-hidden="true">
+                  비밀번호<span className="login-page__asterisk">*</span>
+                </span>
+              )}
               <input
                 id="password"
                 type="password"
                 className="login-page__input"
-                placeholder="비밀번호*"
+                aria-label="비밀번호"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
