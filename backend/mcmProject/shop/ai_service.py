@@ -44,6 +44,25 @@ VARIATION_HINTS = [
 ]
 
 
+def _get_ref_face_ratio(reference: EraReference):
+    """EraReference의 얼굴 높이 비율을 반환. DB에 캐싱된 값이 있으면 그대로 쓰고,
+    없으면(최초 계산 또는 이미지 교체 후) 한 번 계산해서 저장해둔다.
+    (같은 레퍼런스로 여러 방문자가 동시에 처음 생성할 수도 있지만, 계산 자체가
+    가벼운 연산이라 약간 중복 계산되는 정도는 문제없음)"""
+    if reference.face_height_ratio_computed:
+        return reference.face_height_ratio
+
+    try:
+        ratio = detect_face_height_ratio(reference.image.path)
+    except Exception:
+        ratio = None
+
+    reference.face_height_ratio = ratio
+    reference.face_height_ratio_computed = True
+    reference.save(update_fields=['face_height_ratio', 'face_height_ratio_computed'])
+    return ratio
+
+
 def build_prompt(bag_name: str, era: str, ref_face_ratio=None, detail_prompt=None, variation_hint=None) -> str:
     meta = ERA_META[era]
 
@@ -162,10 +181,7 @@ def generate_result(result: PersonaResult, target_field: str = 'generated_image'
 
     # 레퍼런스 사진에서 얼굴 크기 비율을 감지해서 프롬프트에 구체적인 힌트로 넣어줌.
     # 감지 실패해도(얼굴 인식 안 됨 등) 생성 자체는 막지 않고 일반 문구로 대체
-    try:
-        ref_face_ratio = detect_face_height_ratio(reference.image.path)
-    except Exception:
-        ref_face_ratio = None
+    ref_face_ratio = _get_ref_face_ratio(reference)
 
     # "다시 생성"(regen_candidate_image로 저장하는 경우)일 때만 변주 항목을 전부 넣어서
     # 최초 생성과 눈에 띄게 다른 결과가 나오도록 함. 최초 생성은 그대로 유지.

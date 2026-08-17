@@ -124,12 +124,29 @@ class EraReference(models.Model):
         help_text="이 가방×시대 조합에서 강조하고 싶은 디테일(선택사항). "
                    "작성하면 생성 프롬프트에 그대로 추가됩니다. (영어 권장)"
     )
+    # detect_face_height_ratio()는 OpenCV Haar Cascade로 얼굴을 검출하는 연산이라
+    # 매 생성 요청마다 다시 돌릴 필요가 없음 — 레퍼런스 이미지가 바뀌지 않는 한 결과가
+    # 항상 같으므로 최초 1회 계산 후 여기 캐싱해둠.
+    # face_height_ratio_computed로 "아직 계산 안 함"과 "계산했는데 얼굴 미검출(None)"을
+    # 구분 — 안 그러면 얼굴 미검출 케이스가 캐싱되지 않고 매번 재계산됨.
+    face_height_ratio = models.FloatField(null=True, blank=True, editable=False)
+    face_height_ratio_computed = models.BooleanField(default=False, editable=False)
 
     class Meta:
         unique_together = ('product', 'era')
 
     def __str__(self):
         return f"{self.product.name} - {self.era}"
+
+    def save(self, *args, **kwargs):
+        # 관리자 페이지 등에서 image를 새로 업로드하면 캐싱된 비율이 더 이상 유효하지
+        # 않으므로 자동으로 초기화 -> 다음 생성 요청 때 다시 계산됨
+        if self.pk:
+            previous = EraReference.objects.filter(pk=self.pk).values_list('image', flat=True).first()
+            if previous is not None and previous != self.image.name:
+                self.face_height_ratio = None
+                self.face_height_ratio_computed = False
+        super().save(*args, **kwargs)
 
 
 class CapturedPhoto(models.Model):
