@@ -1,20 +1,27 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
-import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
+import { useNavigate, useLocation } from 'react-router-dom'
 import './PeriodPage2005.css'
 
 function PeriodPage2005() {
   const navigate = useNavigate()
-  const [showBagInfo, setShowBagInfo] = useState(false)
+  const location = useLocation()
+  const [isRegenerating, setIsRegenerating] = useState(false)
 
-  const toggleBagInfo = () => {
-    setShowBagInfo((prev) => !prev)
-  }
+  // 재생성 선택 페이지(PeriodPage2005Select)에서 사진을 고르고 돌아온 경우
+  // location.state.regenerated 가 true로 넘어오며, 이때는 '다시 생성' 버튼을 숨긴다.
+  const isFinalized = Boolean(location.state?.regenerated)
+  const currentPhoto = location.state?.photo ?? null
 
   const handleRegenerate = () => {
-    // TODO: '다시 생성' 로직 연결
     console.log('다시 생성 클릭됨')
+    setIsRegenerating(true)
+
+    // TODO: 실제 이미지 재생성 API 호출로 교체.
+    // 아래는 2초 후 재생성된 두 장의 후보 사진을 들고 선택 페이지로 이동하는 자리표시자입니다.
+    setTimeout(() => {
+      const candidatePhotos = [currentPhoto, currentPhoto]
+      navigate('/period/2005/select', { state: { photos: candidatePhotos } })
+    }, 2000)
   }
 
   const handleNextPeriod = () => {
@@ -25,16 +32,50 @@ function PeriodPage2005() {
     <div className="page-wrap">
       <div className="page">
         <header>
-          <div className="timeline" style={{ '--progress': 1 / 3 }}>
-            <div className="year">1976</div>
-            <div className="year active">2005</div>
-            <div className="year">2016</div>
-            <div className="year">2026</div>
+          <div className="line">
+            <div className="rule" />
+            <div className="era">
+              <span className="year">1976</span>
+              <span className="year active">
+                <span className="dot" />
+                2005
+              </span>
+              <span className="year">2016</span>
+              <span className="year">2026</span>
+            </div>
           </div>
         </header>
 
         <section>
-          <div className="imgPage" />
+          <div
+            className="imgPage"
+            style={
+              currentPhoto
+                ? { backgroundImage: `url(${currentPhoto})` }
+                : undefined
+            }
+          >
+            {isRegenerating && (
+              <svg
+                className="loadingSpinner"
+                viewBox="0 0 100 100"
+                aria-label="다시 생성 중"
+                role="status"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#AC7D58"
+                  strokeWidth="9"
+                  strokeLinecap="round"
+                  pathLength="100"
+                  strokeDasharray="75 100"
+                />
+              </svg>
+            )}
+          </div>
 
           <div className="content">
             <div>
@@ -48,46 +89,16 @@ function PeriodPage2005() {
               </div>
             </div>
 
-            <div
-              className="bagSearch"
-              onClick={toggleBagInfo}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') toggleBagInfo()
-              }}
-              aria-expanded={showBagInfo}
-            >
-              <img
-                className="Iimoji"
-                src={infoIcon}
-                alt=""
-                aria-hidden="true"
-              />
-              <div>가방 정보 더 알아보기</div>
-              <img
-                className={
-                  showBagInfo
-                    ? 'bagSearch-arrow bagSearch-arrow--open'
-                    : 'bagSearch-arrow'
-                }
-                src={downArrow}
-                alt=""
-                aria-hidden="true"
-              />
+            <div className="sceneIntro">
+              더 넓은 세상으로 이어진 MCM의 여정을 따라가 보세요.
             </div>
 
-            {showBagInfo && (
-              <div className="bagInfoBox">
-                {/* TODO: 실제 가방 정보 텍스트로 교체 */}
-                가방정보!!
-              </div>
-            )}
-
             <div className="select">
-              <button type="button" onClick={handleRegenerate}>
-                다시 생성
-              </button>
+              {!isFinalized && !isRegenerating && (
+                <button type="button" onClick={handleRegenerate}>
+                  다시 생성
+                </button>
+              )}
               <button type="button" onClick={handleNextPeriod}>
                 <div>다음 시대로</div>
                 <div>&#8250;</div>

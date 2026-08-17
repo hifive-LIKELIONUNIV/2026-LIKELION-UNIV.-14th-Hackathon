@@ -46,6 +46,7 @@ function PhotoPage() {
       <section>
         <div className="title">얼굴을 인식해주세요</div>
         <p className="subtitle">카메라에 얼굴을 정면으로 비춰주세요.</p>
+        <p className="subtitle2">정면을 바라보고 얼굴을 화면 중앙에 맞춰주세요.</p>
 
         <div className="capture-frame">
           <span className="corner tl" />

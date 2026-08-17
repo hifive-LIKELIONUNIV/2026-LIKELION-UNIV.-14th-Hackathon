@@ -17,6 +17,9 @@ import PeriodPage2026 from './pages/PeriodPages/PeriodPage2026.jsx'
 import PhotoFramePage from './pages/PhotoFramePage/PhotoFramePage.jsx'
 import ChoosePage from './pages/ChoosePage/ChoosePage.jsx'
 import PhotoCapturePage from './pages/PhotoCapturePage/PhotoCapturePage.jsx'
+import PeriodPage1976Select from './pages/PeriodSelectPage/PeriodPage1976Select.jsx'
+import PeriodPage2005Select from './pages/PeriodSelectPage/PeriodPage2005Select.jsx'
+import PeriodPage2016Select from './pages/PeriodSelectPage/PeriodPage2016Select.jsx'
 
 function App() {
   return (
@@ -33,8 +36,11 @@ function App() {
       <Route path="/photo" element={<PhotoPage />} />
       <Route path="/photo-end" element={<PhotoEndPage />} />
       <Route path="/period/1976" element={<PeriodPage1976 />} />
+      <Route path="/period/1976/select" element={<PeriodPage1976Select />} />
       <Route path="/period/2005" element={<PeriodPage2005 />} />
+      <Route path="/period/2005/select" element={<PeriodPage2005Select />} />
       <Route path="/period/2016" element={<PeriodPage2016 />} />
+      <Route path="/period/2016/select" element={<PeriodPage2016Select />} />
       <Route path="/period/2026" element={<PeriodPage2026 />} />
       <Route path="/photo-frame" element={<PhotoFramePage />} />
       <Route path="/choose" element={<ChoosePage />} />

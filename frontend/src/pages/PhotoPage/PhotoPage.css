@@ -143,7 +143,14 @@ section {
   margin-bottom: 28px;
   letter-spacing: -0.1px;
 }
-
+.subtitle2{
+  font-size: 14px;
+  font-weight: 200;
+  color: #fff;
+  margin-top: -22px;
+  margin-bottom: 28px;
+  letter-spacing: -0.1px;
+}
 /* ---------- capture frame ---------- */
 .capture-frame {
   position: relative;
@@ -334,5 +341,9 @@ section {
     justify-content: center;
     margin-top: auto;
     padding: 16px 20px;
+  }
+
+  .subtitle2{
+    display: none;
   }
 }

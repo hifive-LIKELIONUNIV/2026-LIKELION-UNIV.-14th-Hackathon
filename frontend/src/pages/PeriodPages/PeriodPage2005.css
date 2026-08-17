@@ -28,47 +28,47 @@ html {
     margin-bottom: clamp(40px, 6vw, 84px);
 }
 
-.timeline {
+.line {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+    flex-direction: column;
+    gap: 9px;
 }
 
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -10px;
+.rule {
+    width: 100%;
     height: 1px;
     background-color: #614833;
 }
 
-.timeline::after {
-    content: "";
+.era {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.year {
+    font-size: 1.15rem;
+    color: #6b6259;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+}
+
+.year.active {
+    color: #f5f0ea;
+    font-weight: 700;
+}
+
+.dot {
     position: absolute;
-    left: calc(var(--progress, 0) * 100%);
-    top: -14.5px;
+    top: -9.5px;
+    left: 50%;
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: #c17a4f;
     box-shadow: 0 0 6px 1px rgba(162, 98, 48, 0.7);
-    transform: translateX(calc(var(--progress, 0) * -10px));
-    transition: left 0.3s ease;
-}
-
-.timeline .year {
-    font-size: 1.15rem;
-    color: #6b6259;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.timeline .year.active {
-    color: #f5f0ea;
-    font-weight: 700;
+    transform: translate(-50%, -50%);
 }
 
 /* ---------- Main section ---------- */
@@ -92,6 +92,25 @@ html {
     background-color: #1c1712;
     background-size: cover;
     background-position: center;
+    position: relative;
+}
+
+/* 다시 생성 로딩 스피너 */
+.loadingSpinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 64px;
+    height: 64px;
+    margin: -32px 0 0 -32px;
+    transform-origin: 50% 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .content {
@@ -126,50 +145,15 @@ html {
     font-weight: 300;
 }
 
-/* ---------- 가방 정보 더 알아보기 (아코디언) ---------- */
+/* ---------- 장면 소개 문구 ---------- */
 
-.bagSearch {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.sceneIntro {
     margin-top: 40px;
-    color: #8E8E8E;
-    font-size: 1rem;
-    cursor: pointer;
-    width: fit-content;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.Iimoji {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    display: block;
-}
-
-.bagSearch-arrow {
-    width: 10px;
-    height: auto;
-    flex-shrink: 0;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.bagSearch-arrow--open {
-    transform: rotate(180deg);
-}
-
-.bagInfoBox {
-    margin-top: 16px;
     max-width: 34em;
-    padding: 18px 20px;
-    border-radius: 12px;
-    background-color: #201a15;
-    border: 1px solid #3a332c;
-    color: #a89a8c;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    text-align: left;
+    color: #d99a6c;
+    font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
+    font-weight: 500;
+    line-height: 1.6;
 }
 
 .select {
@@ -178,6 +162,7 @@ html {
     margin-top: auto;
     padding-top: 48px;
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .select button {
@@ -228,7 +213,7 @@ html {
         max-width: none;
     }
 
-    .bagInfoBox {
+    .sceneIntro {
         max-width: none;
     }
 

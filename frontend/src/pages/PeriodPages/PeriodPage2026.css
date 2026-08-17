@@ -28,47 +28,47 @@ html {
     margin-bottom: clamp(40px, 6vw, 84px);
 }
 
-.timeline {
+.line {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+    flex-direction: column;
+    gap: 9px;
 }
 
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -10px;
+.rule {
+    width: 100%;
     height: 1px;
     background-color: #614833;
 }
 
-.timeline::after {
-    content: "";
+.era {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.year {
+    font-size: 1.15rem;
+    color: #6b6259;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+}
+
+.year.active {
+    color: #f5f0ea;
+    font-weight: 700;
+}
+
+.dot {
     position: absolute;
-    left: calc(var(--progress, 0) * 100%);
-    top: -14.5px;
+    top: -9.5px;
+    left: 50%;
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: #c17a4f;
     box-shadow: 0 0 6px 1px rgba(162, 98, 48, 0.7);
-    transform: translateX(calc(var(--progress, 0) * -10px));
-    transition: left 0.3s ease;
-}
-
-.timeline .year {
-    font-size: 1.15rem;
-    color: #6b6259;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.timeline .year.active {
-    color: #f5f0ea;
-    font-weight: 700;
+    transform: translate(-50%, -50%);
 }
 
 /* ---------- Main section ---------- */
@@ -129,6 +129,17 @@ html {
     color: #fff;
     max-width: 34em;
     font-weight: 300;
+}
+
+/* ---------- 장면 소개 문구 ---------- */
+
+.sceneIntro {
+    margin-top: 40px;
+    max-width: 34em;
+    color: #d99a6c;
+    font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
+    font-weight: 500;
+    line-height: 1.6;
 }
 
 /* ---------- 카메라 촬영 UI (imgPage 내부) ---------- */
@@ -294,11 +305,15 @@ html {
     display: block;
 }
 
-.camera-lens-sm {
-    width: 9px;
+.captureCta-lens {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
     height: 9px;
-    border-width: 1.9px;
-    border-color: #ffffff;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1.9px solid #ffffff;
 }
 
 /* ---------- Responsive (mobile, 660px 기준) ---------- */
@@ -319,6 +334,10 @@ html {
     }
 
     .contentTxt {
+        max-width: none;
+    }
+
+    .sceneIntro {
         max-width: none;
     }
 
