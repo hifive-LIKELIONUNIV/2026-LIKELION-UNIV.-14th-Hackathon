@@ -50,27 +50,27 @@
   position: relative;
   background: #7F5D42;
   border-radius: 16px;
+  border: 3px solid rgba(188,116,74,1);
   padding: 26px 22px 22px;
   overflow: hidden;
 }
 
-.frame-inner::before,
-.frame-inner::after {
+.frame-inner::before{
   content: "";
   position: absolute;
   /* border: 1px solid rgba(255, 255, 255, 0.3); */
+  inset: 6px;
+  
   border-radius: 8px;
   pointer-events: none;
 }
 
 .frame-inner::before {
-  inset: 10px;
+  inset: 13px;
+  border: 3px solid rgba(188,116,74,1);
 }
 
-.frame-inner::after {
-  inset: 14px;
-  border-color: rgba(255, 255, 255, 0.16);
-}
+
 
 .frame-grid {
   position: relative;
@@ -90,14 +90,14 @@
 
 .frame-stamp {
   position: absolute;
-  top: 2px;
-  right: -25px;
-  width: 150px;
-  height: 100px;
+  top: 7px;
+  right: -45px;
+  width: 166px;
+  height: 110px;
   object-fit: contain;
   opacity: 0.9;
   z-index: 2;
-  transform: rotate(33deg);
+  transform: rotate(20deg);
 }
 
 /* 오른쪽: QR 패널 */
