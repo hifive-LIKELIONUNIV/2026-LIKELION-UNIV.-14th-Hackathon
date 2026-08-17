@@ -26,7 +26,14 @@
 
     <a href="{% url 'shop:finish_selection' selection.id %}">다음 단계로</a>
 
+    <!-- 장바구니 담기 결과 알림 (성공/실패 공통, 기본 숨김, 잠시 후 자동으로 사라짐) -->
+    <div id="cart-toast"
+         style="display:none; position:fixed; left:50%; bottom:32px; transform:translateX(-50%);
+                background:#222; color:#fff; padding:10px 20px; border-radius:6px; z-index:1000;"></div>
+
     <script>
+        let toastTimer = null;
+
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
@@ -38,6 +45,16 @@
             el.style.display = el.style.display === 'none' ? 'block' : 'none';
         }
 
+        function showToast(message) {
+            const toast = document.getElementById('cart-toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2500);
+        }
+
         function addToCart(productId) {
             fetch(`/shop/cart/add/${productId}/`, {
                 method: 'POST',
@@ -46,10 +63,15 @@
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    console.error('[addToCart] 실패:', data.error);
+                    showToast('장바구니에 담지 못했어요. 잠시 후 다시 시도해주세요.');
                     return;
                 }
-                alert('장바구니에 담았습니다.');
+                showToast('장바구니에 담았습니다.');
+            })
+            .catch(err => {
+                console.error('[addToCart] 요청 오류:', err);
+                showToast('장바구니에 담지 못했어요. 잠시 후 다시 시도해주세요.');
             });
         }
     </script>

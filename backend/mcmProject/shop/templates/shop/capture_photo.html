@@ -15,6 +15,12 @@
             <p>카메라 활성화 중</p>
         </div>
         <p>촬영된 얼굴 이미지는 TIME PORTAL 체험 이미지 생성에만 사용됩니다.</p>
+
+        <!-- 카메라 권한/접근 실패 시 여기로 전환 (기본 숨김) -->
+        <div id="camera-error-box" style="display:none;">
+            <p>카메라를 사용할 수 없어요. 카메라 권한을 확인한 뒤 다시 시도해주세요.</p>
+            <button id="camera-retry-btn" type="button">다시 시도</button>
+        </div>
     </div>
 
     <!-- 2단계: 카메라 화면. 권한 허용되면 자동으로 표시되고,
@@ -30,6 +36,8 @@
         </div>
         <p id="progress">0 / 2</p>
         <p id="status-text">촬영 가능 횟수</p>
+        <!-- 저장 실패 시 여기로 전환 (기본 숨김) -->
+        <p id="save-error-text" style="display:none; color:#c0392b;">사진 저장에 실패했어요. 다시 촬영해주세요.</p>
         <button id="start-btn" style="display:none;">촬영하기</button>
     </div>
 
@@ -45,6 +53,9 @@
         const countdownEl = document.getElementById('countdown');
         const progress = document.getElementById('progress');
         const statusText = document.getElementById('status-text');
+        const cameraErrorBox = document.getElementById('camera-error-box');
+        const cameraRetryBtn = document.getElementById('camera-retry-btn');
+        const saveErrorText = document.getElementById('save-error-text');
 
         const selectionId = {{ selection.id }};
         let photoCount = {{ photo_count }};
@@ -83,6 +94,7 @@
         // 페이지 진입 시 바로 카메라 권한 요청 + 미리보기 시작
         // (아직 촬영은 시작하지 않음 — '촬영하기' 버튼을 눌러야 카운트다운이 시작됨)
         function initCamera() {
+            cameraErrorBox.style.display = 'none';
             navigator.mediaDevices.getUserMedia({
                 video: {
                     width: { ideal: 600 },
@@ -98,9 +110,12 @@
                     showStartButton();
                 })
                 .catch(err => {
-                    alert('웹캠 접근에 실패했습니다: ' + err.message);
+                    console.error('[initCamera] 웹캠 접근 실패:', err);
+                    cameraErrorBox.style.display = 'block';
                 });
         }
+
+        cameraRetryBtn.addEventListener('click', initCamera);
 
         function showStartButton() {
             statusText.textContent = '촬영 가능 횟수';
@@ -109,6 +124,7 @@
 
         // '촬영하기' 클릭 -> 카운트다운 시작 (1번째 촬영만 이 버튼을 거침, 2번째는 자동 이어짐)
         startBtn.addEventListener('click', () => {
+            saveErrorText.style.display = 'none';
             startBtn.style.display = 'none';
             startCountdown();
         });
@@ -177,7 +193,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
-                    alert(data.error);
+                    console.error('[capturePhoto] 저장 실패:', data.error);
+                    saveErrorText.style.display = 'block';
                     showStartButton(); // 실패했으면 다시 촬영할 수 있게 버튼 복구
                     return;
                 }
@@ -199,7 +216,8 @@
                 }
             })
             .catch(err => {
-                alert('저장 실패: ' + err.message);
+                console.error('[capturePhoto] 요청 오류:', err);
+                saveErrorText.style.display = 'block';
                 showStartButton();
             });
         }
