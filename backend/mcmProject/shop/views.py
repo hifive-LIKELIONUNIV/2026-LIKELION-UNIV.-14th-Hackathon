@@ -13,7 +13,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, CartItem, PersonaSelection, CapturedPhoto, PersonaResult
-from .constants import ERA_ORDER, ERA_META, next_era
+from .constants import (
+    ERA_ORDER,
+    ERA_META,
+    next_era,
+    PASSPORT_FRAME_PATH,
+    PASSPORT_FRAME_SLOTS,
+    PASSPORT_PLAIN_CANVAS_SIZE,
+    PASSPORT_PLAIN_BACKGROUND_COLOR,
+)
 from . import ai_service
 
 # 백그라운드 생성이 이 시간보다 오래 'processing' 상태로 멈춰 있으면
@@ -508,31 +516,81 @@ def passport_result(request, selection_id):
 
 
 def _build_passport_grid_image(results):
-    """4개 PersonaResult 이미지를 2x2 네컷 그리드 하나의 이미지로 합성."""
-    cell_w, cell_h = 480, 640
-    gap = 16
-    canvas_w = cell_w * 2 + gap * 3
-    canvas_h = cell_h * 2 + gap * 3
-    canvas = Image.new('RGB', (canvas_w, canvas_h), color=(20, 16, 12))
+    """4개 PersonaResult 이미지를 하나의 네컷 이미지로 합성.
 
-    positions = [
-        (gap, gap),
-        (gap * 2 + cell_w, gap),
-        (gap, gap * 2 + cell_h),
-        (gap * 2 + cell_w, gap * 2 + cell_h),
-    ]
+    PASSPORT_FRAME_PATH(constants.py)가 지정돼 있으면 그 프레임 이미지 위에
+    PASSPORT_FRAME_SLOTS 좌표대로 사진을 앉혀서 합성하고, 지정돼 있지 않으면
+    지금까지와 동일하게 단색 배경 위에 격자로 배치한다.
+    프론트/디자인팀에서 프레임 에셋을 받으면 constants.py의 두 값만 채우면
+    이 함수는 그대로 프레임 버전으로 동작한다."""
+    if PASSPORT_FRAME_PATH:
+        return _build_passport_grid_image_with_frame(results, PASSPORT_FRAME_PATH)
+    return _build_passport_grid_image_plain(results)
 
-    for result, pos in zip(results, positions):
+
+def _build_passport_grid_image_plain(results):
+    """프레임 없이: 단색 배경 위에 PASSPORT_FRAME_SLOTS 자리대로 사진만 배치(기존 방식)."""
+    canvas = Image.new('RGB', PASSPORT_PLAIN_CANVAS_SIZE, color=PASSPORT_PLAIN_BACKGROUND_COLOR)
+
+    for result, (x, y, w, h) in zip(results, PASSPORT_FRAME_SLOTS):
         with Image.open(result.generated_image.path) as img:
-            img = img.convert('RGB').resize((cell_w, cell_h))
-            canvas.paste(img, pos)
+            img = img.convert('RGB').resize((w, h))
+            canvas.paste(img, (x, y))
 
     return canvas
 
 
+def _build_passport_grid_image_with_frame(results, frame_path):
+    """프레임 PNG(사진 자리만 투명하게 뚫린 이미지) 위에 사진을 앉혀서 합성.
+    캔버스 크기는 프레임 이미지 자체의 크기를 그대로 쓴다."""
+    with Image.open(frame_path) as frame:
+        frame = frame.convert('RGBA')
+        canvas = Image.new('RGBA', frame.size, (0, 0, 0, 0))
+
+        for result, (x, y, w, h) in zip(results, PASSPORT_FRAME_SLOTS):
+            with Image.open(result.generated_image.path) as img:
+                img = img.convert('RGB').resize((w, h))
+                canvas.paste(img, (x, y))
+
+        # 사진 위에 프레임을 얹기 — 프레임 자체의 알파 채널을 마스크로 써서
+        # 투명한 자리(사진)는 그대로 비치고, 불투명한 자리(테두리/로고 등)는 프레임이 덮음
+        canvas.paste(frame, (0, 0), frame)
+
+    return canvas.convert('RGB')
+
+
+def passport_preview(request, selection_id):
+    """QR코드를 스캔하면 도착하는 미리보기 화면. 사진을 확인한 뒤 '다운로드' 버튼을
+    직접 눌러야 다운로드가 시작된다(스캔하자마자 바로 다운로드되던 것에서 변경)."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    results = PersonaResult.objects.filter(selection=selection, status='done').order_by('era')
+
+    if results.count() < len(ERA_ORDER):
+        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+
+    context = {'selection': selection}
+    return render(request, 'shop/passport_preview.html', context)
+
+
+def passport_preview_image(request, selection_id):
+    """미리보기 화면에 표시할 네컷 이미지. passport_download와 같은 이미지를 만들지만,
+    Content-Disposition을 attachment로 주지 않아서 <img>로 바로 보여줄 수 있다."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
+
+    if len(results) < len(ERA_ORDER):
+        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+
+    canvas = _build_passport_grid_image(results)
+    buffer = io.BytesIO()
+    canvas.save(buffer, format='PNG')
+
+    return HttpResponse(buffer.getvalue(), content_type='image/png')
+
+
 def passport_download(request, selection_id):
     """4개 시대 결과를 하나의 네컷 이미지로 합쳐서 다운로드용으로 반환.
-    QR코드가 이 URL을 가리켜서, 스캔하면 바로 이미지가 휴대폰에 다운로드되게 함."""
+    미리보기 화면의 '다운로드' 버튼이 이 URL을 가리킨다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
 
@@ -549,11 +607,11 @@ def passport_download(request, selection_id):
 
 
 def passport_qrcode(request, selection_id):
-    """네컷 다운로드 URL을 QR코드 이미지로 즉석 생성해서 반환.
-    사용자가 휴대폰으로 스캔하면 바로 이미지 다운로드가 시작되게 하기 위함."""
+    """네컷 미리보기 URL을 QR코드 이미지로 즉석 생성해서 반환.
+    사용자가 휴대폰으로 스캔하면 미리보기 화면으로 이동하고, 거기서 다운로드 버튼을 눌러야 함."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     target_url = request.build_absolute_uri(
-        reverse('shop:passport_download', args=[selection.id])
+        reverse('shop:passport_preview', args=[selection.id])
     )
 
     img = qrcode.make(target_url)

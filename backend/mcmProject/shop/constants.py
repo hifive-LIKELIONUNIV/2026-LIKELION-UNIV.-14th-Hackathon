@@ -45,3 +45,28 @@ def next_era(era: str):
     if idx + 1 < len(ERA_ORDER):
         return ERA_ORDER[idx + 1]
     return None
+
+
+# ---- 네컷(passport) 프레임 설정 ----
+# 지금은 프레임 이미지가 없어서 PASSPORT_FRAME_PATH가 비어있고, 그 경우 아래
+# PASSPORT_FRAME_SLOTS 좌표 그대로 단색 배경 위에 사진만 격자로 배치한다(기존 방식).
+#
+# 나중에 프론트/디자인팀에서 프레임 이미지(사진 자리만 투명하게 뚫린 PNG)를 받으면:
+#   1. 이미지 파일을 backend/mcmProject/media/frames/ 같은 곳에 넣고
+#   2. PASSPORT_FRAME_PATH에 그 경로를 지정하고
+#   3. 그 프레임 안에서 사진이 들어갈 실제 자리(x, y, 너비, 높이)에 맞게
+#      아래 PASSPORT_FRAME_SLOTS 값을 프레임 디자인에 맞게 수정하면 됨.
+# 순서는 1976 -> 2005 -> 2016 -> 2026.
+PASSPORT_FRAME_PATH = None  # 예: BASE_DIR / 'media' / 'frames' / 'time_passport_frame.png'
+
+PASSPORT_FRAME_SLOTS = [
+    (16, 16, 480, 640),
+    (512, 16, 480, 640),
+    (16, 672, 480, 640),
+    (512, 672, 480, 640),
+]
+
+# 프레임이 없을 때(PASSPORT_FRAME_PATH가 None) 쓰는 기본 캔버스 크기/배경색.
+# 프레임이 생기면 프레임 이미지 자체의 크기를 그대로 캔버스 크기로 쓰므로 이 값은 안 쓰임.
+PASSPORT_PLAIN_CANVAS_SIZE = (1008, 1328)
+PASSPORT_PLAIN_BACKGROUND_COLOR = (20, 16, 12)

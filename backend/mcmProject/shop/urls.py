@@ -30,6 +30,8 @@ urlpatterns = [
     path('capture/<int:selection_id>/era/2026/capture/save/', views.era_2026_capture_save, name='era_2026_capture_save'),
 
     path('capture/<int:selection_id>/passport/', views.passport_result, name='passport_result'),
+    path('capture/<int:selection_id>/passport/preview/', views.passport_preview, name='passport_preview'),
+    path('capture/<int:selection_id>/passport/preview/image/', views.passport_preview_image, name='passport_preview_image'),
     path('capture/<int:selection_id>/passport/download/', views.passport_download, name='passport_download'),
     path('capture/<int:selection_id>/passport/qrcode/', views.passport_qrcode, name='passport_qrcode'),
 ]
