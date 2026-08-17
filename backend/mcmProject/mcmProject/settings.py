@@ -28,7 +28,13 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--8g)@80b3b86-*zh0l4=^))9bj0d@9d9swo+66^ve79wl=#%uv'
+# 예전엔 여기 실제 키 값이 그대로 하드코딩돼서 git에 커밋돼 있었음 -> .env로 이동.
+# .env에 DJANGO_SECRET_KEY가 없으면(팀원이 아직 .env를 안 채운 경우 등) 개발용으로만
+# 쓰는 placeholder로 대체 — 이 fallback 값은 절대 실제 배포에 쓰면 안 됨.
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-CHANGE-ME-in-dotenv-local-dev-only",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
