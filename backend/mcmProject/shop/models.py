@@ -9,6 +9,11 @@ class Product(models.Model):
     is_default = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # MCM 상품 코드(엑셀의 '상품코드'). 상품명만으로는 재실행 시 중복 생성될 수 있어서,
+    # 엑셀 재가져오기(import_products 커맨드)를 여러 번 돌려도 같은 상품이 업데이트되도록
+    # 매칭 키로 사용. 코드가 없는 상품(엑셀에 상품코드 누락)도 있어서 unique는 아님 —
+    # 코드가 있으면 코드로, 없으면 이름으로 매칭한다.
+    sku = models.CharField(max_length=50, blank=True, db_index=True)
 
     recommended_products = models.ManyToManyField(
         'self',
