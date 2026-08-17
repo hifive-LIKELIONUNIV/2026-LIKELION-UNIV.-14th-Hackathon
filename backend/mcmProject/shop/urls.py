@@ -7,6 +7,8 @@ urlpatterns = [
     path('select/', views.select_bag, name='select_bag'),
     path('select/done/', views.select_bag_done, name='select_bag_done'),
 
+    path('eras/', views.era_list, name='era_list'),
+
     path('capture/<int:selection_id>/', views.capture_photo, name='capture_photo'),
     path('capture/<int:selection_id>/save/', views.save_photo, name='save_photo'),
 

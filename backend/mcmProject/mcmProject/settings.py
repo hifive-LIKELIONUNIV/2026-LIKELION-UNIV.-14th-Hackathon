@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'accounts',
     'onboarding',
     'shop',
@@ -60,6 +61,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # CorsMiddleware는 CommonMiddleware보다 먼저 와야 함 (django-cors-headers 공식 권장 순서)
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -67,6 +70,27 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# ---- React 프론트(별도 오리진)에서 세션 쿠키 기반으로 API를 호출하기 위한 CORS/CSRF 설정 ----
+# 프론트 개발 서버 주소는 팀마다/도구마다(Vite=5173, CRA=3000) 다를 수 있어서 .env의
+# FRONTEND_ORIGINS(콤마로 구분)로 오버라이드할 수 있게 하고, 지정 안 하면 흔한 기본값들을 허용.
+_default_frontend_origins = (
+    "http://localhost:3000,http://127.0.0.1:3000,"
+    "http://localhost:5173,http://127.0.0.1:5173"
+)
+FRONTEND_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("FRONTEND_ORIGINS", _default_frontend_origins).split(",")
+    if origin.strip()
+]
+
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+# 세션 쿠키(로그인 상태)를 프론트에서 fetch(..., {credentials: 'include'})로 주고받으려면 필요
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF 쿠키/토큰 검증도 별도 오리진 요청을 신뢰하도록 같은 목록을 등록해야 함
+# (안 하면 로그인 등 POST 요청이 전부 403 CSRF 오류로 막힘)
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
 
 ROOT_URLCONF = 'mcmProject.urls'
 

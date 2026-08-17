@@ -7,11 +7,11 @@ from PIL import Image
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import close_old_connections
-from django.http import JsonResponse, Http404, HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from .models import Product, CartItem, PersonaSelection, CapturedPhoto, PersonaResult
 from .constants import (
     ERA_ORDER,
@@ -29,6 +29,29 @@ from . import ai_service
 STALE_PROCESSING_THRESHOLD = timezone.timedelta(minutes=2)
 
 
+# ---- React(별도 오리진) 연동을 위한 JSON API 전환 공통 헬퍼 ----
+# 화면(render)/리다이렉트(redirect) 대신 전부 JsonResponse로 응답하도록 바꾸는 작업.
+# 프론트가 다른 오리진에서 이미지를 <img src="...">로 바로 띄울 수 있도록,
+# 이미지 필드는 상대경로(/media/...)가 아니라 항상 절대 URL로 내려준다.
+
+def _abs(request, file_field):
+    """ImageField -> 절대 URL 문자열. 파일이 없으면 None."""
+    if not file_field:
+        return None
+    return request.build_absolute_uri(file_field.url)
+
+
+def _product_json(request, product):
+    return {
+        'id': product.id,
+        'name': product.name,
+        'subtitle': product.subtitle,
+        'description': product.description,
+        'image_url': _abs(request, product.image),
+        'price': str(product.price) if product.price is not None else None,
+    }
+
+
 def select_bag(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
@@ -44,7 +67,11 @@ def select_bag(request):
         )
 
         # 가방 선택 끝나면 바로 촬영 화면으로 이동
-        return redirect('shop:capture_photo', selection_id=selection.id)
+        return JsonResponse({
+            'success': True,
+            'selection_id': selection.id,
+            'redirect': reverse('shop:capture_photo', args=[selection.id]),
+        })
 
     cart_items = []
 
@@ -58,28 +85,29 @@ def select_bag(request):
         products = Product.objects.filter(is_default=True)[:3]
         message = "취향에 맞는 가방을 골라주세요"
 
-    context = {
-        'products': products,
+    return JsonResponse({
+        'products': [_product_json(request, p) for p in products],
         'message': message,
-    }
-    return render(request, 'shop/select_bag.html', context)
+    })
 
 
 def select_bag_done(request):
-    """임시 완료 페이지 - 나중에 촬영 화면으로 대체"""
-    return render(request, 'shop/select_bag_done.html')
+    """임시 완료 페이지 - 현재 어떤 화면에서도 링크되어 있지 않은 미사용 엔드포인트.
+    (React 전환 대상에서 제외 — 필요 없어지면 별도로 정리)"""
+    return JsonResponse({'note': '미사용 엔드포인트'})
 
 
 def capture_photo(request, selection_id):
-    """웹캠 촬영 화면 보여주기"""
+    """웹캠 촬영 화면에 필요한 데이터. 실제 촬영/카운트다운 UI는 프론트(React)가 담당하고,
+    여기서는 지금까지 촬영된 장수만 알려준다 (최대 2장)."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     photo_count = selection.captured_photos.count()
 
-    context = {
-        'selection': selection,
+    return JsonResponse({
+        'selection_id': selection.id,
         'photo_count': photo_count,
-    }
-    return render(request, 'shop/capture_photo.html', context)
+        'max_photos': 2,
+    })
 
 
 @require_POST
@@ -106,27 +134,33 @@ def save_photo(request, selection_id):
     )
 
     photo_count = selection.captured_photos.count()
+    next_step = 'choose' if photo_count >= 2 else 'capture_again'
 
     return JsonResponse({
         'success': True,
+        'photo_id': photo.id,
+        'image_url': _abs(request, photo.image),
         'photo_count': photo_count,
-        'next_step': 'choose' if photo_count >= 2 else 'capture_again',
+        'next_step': next_step,
+        'redirect': reverse('shop:choose_photo_page', args=[selection.id]) if next_step == 'choose' else None,
     })
 
 
 def choose_photo_page(request, selection_id):
-    """촬영된 2장 중 선택하는 화면"""
+    """촬영된 2장 중 선택하는 화면에 필요한 데이터"""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     photos = selection.captured_photos.all()
 
     if photos.count() < 2:
-        return redirect('shop:capture_photo', selection_id=selection.id)
+        return JsonResponse({
+            'error': '아직 2장을 촬영하지 않았습니다.',
+            'redirect': reverse('shop:capture_photo', args=[selection.id]),
+        }, status=409)
 
-    context = {
-        'selection': selection,
-        'photos': photos,
-    }
-    return render(request, 'shop/choose_photo.html', context)
+    return JsonResponse({
+        'selection_id': selection.id,
+        'photos': [{'id': p.id, 'image_url': _abs(request, p.image)} for p in photos],
+    })
 
 
 @require_POST
@@ -148,21 +182,42 @@ def choose_photo(request, selection_id):
             _kick_off_era_generation(selection, era)
 
     # 사진 선택이 끝나면 첫 번째 시대(1976) 로딩 화면으로 이동
-    return redirect('shop:era_loading', selection_id=selection.id, era=ERA_ORDER[0])
+    return JsonResponse({
+        'success': True,
+        'redirect': reverse('shop:era_loading', args=[selection.id, ERA_ORDER[0]]),
+    })
+
+
+FINISH_MESSAGES = {
+    'alone': 'TIME PORTAL의 여정이 마무리되었습니다. 이제 MCM HAUS에서 마음에 든 제품을 직접 만나보세요.',
+    'with_staff': 'TIME PORTAL의 여정이 마무리되었습니다. 잠시만 기다려주세요. 직원이 잠시 후 도착합니다.',
+}
 
 
 def finish_selection(request, selection_id):
     selection = get_object_or_404(PersonaSelection, id=selection_id)
 
     if request.method == 'POST':
-        mode = request.POST.get('mode')  
+        mode = request.POST.get('mode')
+        if mode not in FINISH_MESSAGES:
+            return JsonResponse({'error': '잘못된 모드입니다.'}, status=400)
 
         if mode == 'with_staff':
-            pass
+            pass  # TODO: 직원 호출 알림 등 필요 시 여기에 추가
 
-        return redirect('onboarding')
+        # 여기서는 안내 문구만 돌려준다 — 로그아웃/세션 초기화는 사용자가 모달의
+        # "처음으로"를 눌렀을 때만 별도로 restart_view를 호출해서 수행한다
+        # (모드 선택 자체가 곧바로 로그아웃으로 이어지면 안 됨).
+        return JsonResponse({
+            'success': True,
+            'message': FINISH_MESSAGES[mode],
+        })
 
-    return render(request, 'shop/finish.html', {'selection': selection})
+    return JsonResponse({
+        'selection_id': selection.id,
+        'messages': FINISH_MESSAGES,
+    })
+
 
 def recommend_products(request, selection_id):
     """선택한 가방에 고정으로 매핑된 추천 상품 보여주기"""
@@ -170,11 +225,13 @@ def recommend_products(request, selection_id):
 
     recommended_products = selection.product.recommended_products.all()[:4]
 
-    context = {
-        'selection': selection,
-        'products': recommended_products,
-    }
-    return render(request, 'shop/recommend_products.html', context)
+    return JsonResponse({
+        'selection_id': selection.id,
+        'products': [_product_json(request, p) for p in recommended_products],
+        # 비로그인 사용자는 장바구니 담기 기능 자체를 못 쓰므로, 버튼 노출 여부를
+        # 프론트에서 판단할 수 있게 로그인 상태를 함께 내려준다.
+        'cart_enabled': request.user.is_authenticated,
+    })
 
 
 @require_POST
@@ -255,22 +312,30 @@ def _is_stale_processing(result):
     )
 
 
-def era_loading(request, selection_id, era):
-    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성/상태 확인은 fetch로 처리.
+def era_list(request):
+    """시대 순서 + 각 시대 메타데이터(제목/설명/타임라인 표시용) 전체 목록.
+    정적인 데이터라 프론트에서 앱 진입 시 한 번만 불러와 캐싱해두면 된다."""
+    return JsonResponse({
+        'era_order': ERA_ORDER,
+        'era_meta': ERA_META,
+    })
 
-    프리페치로 이미 status='done'이어도 여기서 바로 결과 화면으로 리다이렉트하지 않는다 —
-    그러면 로딩 화면 자체가 안 뜨면서 최소 노출 시간(MIN_VISIBLE_MS)이 적용될 기회가 없어짐.
-    대신 로딩 화면을 그대로 띄우고, JS가 상태 확인 후 최소 시간을 채운 뒤 넘어가게 한다."""
+
+def era_loading(request, selection_id, era):
+    """시대 이동 로딩 화면에 필요한 메타데이터. 실제 진행률 표시/폴링/생성 요청은
+    프론트가 era_status / era_generate를 호출해서 직접 처리한다 (아래 두 엔드포인트).
+
+    참고: 프리페치로 이미 status='done'이어도 여기서 결과로 자동 리다이렉트하지 않는다 —
+    최소 노출 시간(로딩 UI)을 프론트가 스스로 챙길 수 있도록 상태 판단은 프론트에 맡긴다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     if era not in ERA_ORDER:
-        raise Http404("알 수 없는 시대입니다.")
+        return JsonResponse({'error': '알 수 없는 시대입니다.'}, status=404)
 
-    context = {
-        'selection': selection,
+    return JsonResponse({
+        'selection_id': selection.id,
         'era': era,
         'era_meta': ERA_META[era],
-    }
-    return render(request, 'shop/era_loading.html', context)
+    })
 
 
 def era_status(request, selection_id, era):
@@ -331,19 +396,24 @@ def era_generate(request, selection_id, era):
 
     return JsonResponse({
         'success': True,
+        'image_url': _abs(request, result.generated_image),
         'redirect': reverse('shop:era_result', args=[selection.id, era]),
     })
 
 
 def era_result(request, selection_id, era):
-    """시대별 합성 결과 화면. 아직 생성 안 됐으면 로딩 화면으로 되돌림."""
+    """시대별 합성 결과 화면에 필요한 데이터. 아직 생성 안 됐으면 로딩 상태로 응답."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     if era not in ERA_ORDER:
-        raise Http404("알 수 없는 시대입니다.")
+        return JsonResponse({'error': '알 수 없는 시대입니다.'}, status=404)
 
     result = get_object_or_404(PersonaResult, selection=selection, era=era)
     if result.status != 'done':
-        return redirect('shop:era_loading', selection_id=selection.id, era=era)
+        # 아직 결과가 없음 — 프론트는 이 응답을 받으면 로딩 화면(폴링)으로 진입하면 된다
+        return JsonResponse({
+            'status': result.status,
+            'redirect': reverse('shop:era_loading', args=[selection.id, era]),
+        }, status=202)
 
     # 사용자가 이 결과를 보는 동안 다음 시대 이미지를 백그라운드에서 미리 생성 시작
     _prefetch_next_era(selection, era)
@@ -353,17 +423,19 @@ def era_result(request, selection_id, era):
     has_candidate = bool(result.regen_candidate_image)
 
     context = {
-        'selection': selection,
-        'result': result,
+        'status': 'done',
+        'selection_id': selection.id,
         'era': era,
         'era_meta': ERA_META[era],
         'era_order': ERA_ORDER,
+        'image_url': _abs(request, result.generated_image),
         'has_candidate': has_candidate,
+        'candidate_image_url': _abs(request, result.regen_candidate_image) if has_candidate else None,
         # 2026(현재)은 합성이 아니라 원본 사진이라 다시 생성 대상이 아님
         'can_regenerate': (not has_candidate) and (not result.regenerated) and era != '2026',
         'next_era': next_era(era),
     }
-    return render(request, 'shop/era_result.html', context)
+    return JsonResponse(context)
 
 
 @require_POST
@@ -407,21 +479,24 @@ def era_regenerate(request, selection_id, era):
 
 
 def era_regen_choose(request, selection_id, era):
-    """'다시 생성' 직후, 기존 사진과 새로 생성된 사진 중 하나를 고르는 화면."""
+    """'다시 생성' 직후, 기존 사진과 새로 생성된 사진 중 하나를 고르는 화면에 필요한 데이터."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     result = get_object_or_404(PersonaResult, selection=selection, era=era)
 
     if not result.regen_candidate_image:
         # 고를 후보가 없으면(직접 URL 접근 등) 결과 화면으로 되돌림
-        return redirect('shop:era_result', selection_id=selection.id, era=era)
+        return JsonResponse({
+            'error': '선택할 수 있는 후보 사진이 없습니다.',
+            'redirect': reverse('shop:era_result', args=[selection.id, era]),
+        }, status=409)
 
-    context = {
-        'selection': selection,
-        'result': result,
+    return JsonResponse({
+        'selection_id': selection.id,
         'era': era,
         'era_meta': ERA_META[era],
-    }
-    return render(request, 'shop/era_regen_choose.html', context)
+        'original_image_url': _abs(request, result.generated_image),
+        'candidate_image_url': _abs(request, result.regen_candidate_image),
+    })
 
 
 @require_POST
@@ -451,6 +526,7 @@ def era_regen_confirm(request, selection_id, era):
 
     return JsonResponse({
         'success': True,
+        'image_url': _abs(request, result.generated_image),
         'redirect': reverse('shop:era_result', args=[selection.id, era]),
     })
 
@@ -462,13 +538,16 @@ def era_2026_capture(request, selection_id):
     result = _get_or_create_result(selection, '2026')
 
     if result.status == 'done':
-        return redirect('shop:era_result', selection_id=selection.id, era='2026')
+        return JsonResponse({
+            'status': 'done',
+            'redirect': reverse('shop:era_result', args=[selection.id, '2026']),
+        })
 
-    context = {
-        'selection': selection,
+    return JsonResponse({
+        'status': result.status,
+        'selection_id': selection.id,
         'era_meta': ERA_META['2026'],
-    }
-    return render(request, 'shop/era_2026_capture.html', context)
+    })
 
 
 @require_POST
@@ -494,25 +573,33 @@ def era_2026_capture_save(request, selection_id):
 
     return JsonResponse({
         'success': True,
+        'image_url': _abs(request, result.generated_image),
         'redirect': reverse('shop:era_result', args=[selection.id, '2026']),
     })
 
 
 def passport_result(request, selection_id):
-    """4개 시대 결과를 인생네컷처럼 모아 보여주는 최종 화면."""
+    """4개 시대 결과를 인생네컷처럼 모아 보여주는 최종 화면에 필요한 데이터."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = PersonaResult.objects.filter(selection=selection, status='done').order_by('era')
 
     if results.count() < len(ERA_ORDER):
         for era in ERA_ORDER:
             if not results.filter(era=era).exists():
-                return redirect('shop:era_loading', selection_id=selection.id, era=era)
+                return JsonResponse({
+                    'error': f'{era} 시대 결과가 아직 준비되지 않았습니다.',
+                    'redirect': reverse('shop:era_loading', args=[selection.id, era]),
+                }, status=409)
 
-    context = {
-        'selection': selection,
-        'results': results,
-    }
-    return render(request, 'shop/passport_result.html', context)
+    return JsonResponse({
+        'selection_id': selection.id,
+        'product_name': selection.product.name,
+        'results': [
+            {'era': r.era, 'image_url': _abs(request, r.generated_image)}
+            for r in results
+        ],
+        'qrcode_url': reverse('shop:passport_qrcode', args=[selection.id]),
+    })
 
 
 def _build_passport_grid_image(results):
@@ -582,26 +669,34 @@ def _get_or_build_passport_image(selection, results):
 
 
 def passport_preview(request, selection_id):
-    """QR코드를 스캔하면 도착하는 미리보기 화면. 사진을 확인한 뒤 '다운로드' 버튼을
-    직접 눌러야 다운로드가 시작된다(스캔하자마자 바로 다운로드되던 것에서 변경)."""
+    """QR코드를 스캔하면 도착하는 미리보기 화면에 필요한 데이터. 사진을 확인한 뒤
+    '다운로드' 버튼을 직접 눌러야 다운로드가 시작된다(스캔하자마자 바로 다운로드되던 것에서 변경)."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = PersonaResult.objects.filter(selection=selection, status='done').order_by('era')
 
     if results.count() < len(ERA_ORDER):
-        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+        return JsonResponse({'error': '아직 모든 시대의 결과가 준비되지 않았습니다.'}, status=404)
 
-    context = {'selection': selection}
-    return render(request, 'shop/passport_preview.html', context)
+    return JsonResponse({
+        'selection_id': selection.id,
+        'preview_image_url': request.build_absolute_uri(
+            reverse('shop:passport_preview_image', args=[selection.id])
+        ),
+        'download_url': request.build_absolute_uri(
+            reverse('shop:passport_download', args=[selection.id])
+        ),
+    })
 
 
 def passport_preview_image(request, selection_id):
-    """미리보기 화면에 표시할 네컷 이미지. passport_download와 같은 이미지를 재사용하되,
-    Content-Disposition을 attachment로 주지 않아서 <img>로 바로 보여줄 수 있다."""
+    """미리보기 화면에 표시할 네컷 이미지(바이너리 PNG 응답 — JSON 아님).
+    passport_download와 같은 이미지를 재사용하되, Content-Disposition을 attachment로
+    주지 않아서 <img>로 바로 보여줄 수 있다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
 
     if len(results) < len(ERA_ORDER):
-        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+        return JsonResponse({'error': '아직 모든 시대의 결과가 준비되지 않았습니다.'}, status=404)
 
     passport_image = _get_or_build_passport_image(selection, results)
     with passport_image.open('rb') as f:
@@ -609,13 +704,13 @@ def passport_preview_image(request, selection_id):
 
 
 def passport_download(request, selection_id):
-    """4개 시대 결과를 하나의 네컷 이미지로 합쳐서 다운로드용으로 반환.
+    """4개 시대 결과를 하나의 네컷 이미지로 합쳐서 다운로드용으로 반환(바이너리 PNG 응답 — JSON 아님).
     미리보기 화면의 '다운로드' 버튼이 이 URL을 가리킨다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     results = list(PersonaResult.objects.filter(selection=selection, status='done').order_by('era'))
 
     if len(results) < len(ERA_ORDER):
-        raise Http404("아직 모든 시대의 결과가 준비되지 않았습니다.")
+        return JsonResponse({'error': '아직 모든 시대의 결과가 준비되지 않았습니다.'}, status=404)
 
     passport_image = _get_or_build_passport_image(selection, results)
     with passport_image.open('rb') as f:
