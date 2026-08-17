@@ -6,6 +6,9 @@ import lizShopperImage from '../../assets/images/image 56.png'
 import airplaneIcon from '../../assets/images/clarity_airplane-solid.png'
 import clockBgImage from '../../assets/images/image 82.png'
 import stampImage from '../../assets/images/image 83.png'
+import glowLeftImage from '../../assets/images/글로우 왼쪽.png'
+import glowCenterImage from '../../assets/images/중앙 글로우.png'
+import glowRightImage from '../../assets/images/오른쪽 글로우.png'
 import './TimeMachinePage.css'
 
 const BAGS = [
@@ -61,10 +64,30 @@ function TimeMachinePage() {
         </defs>
       </svg>
 
+      <img
+        src={clockBgImage}
+        className="tm-page__bg-clock"
+        alt=""
+        aria-hidden="true"
+      />
+
+      <img
+        src={glowLeftImage}
+        className="tm-page__side-glow tm-page__side-glow--left"
+        alt=""
+        aria-hidden="true"
+      />
+      <img
+        src={glowRightImage}
+        className="tm-page__side-glow tm-page__side-glow--right"
+        alt=""
+        aria-hidden="true"
+      />
+
       <div className="tm-page__stage">
         <img
-          src={clockBgImage}
-          className="tm-page__bg-clock"
+          src={glowCenterImage}
+          className="tm-page__glow tm-page__glow--center"
           alt=""
           aria-hidden="true"
         />
