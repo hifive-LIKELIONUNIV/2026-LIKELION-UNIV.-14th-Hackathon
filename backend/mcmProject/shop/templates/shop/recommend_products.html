@@ -13,7 +13,9 @@
             <img src="{{ product.image.url }}" width="200">
             <p>{{ product.name }}</p>
             <button type="button" onclick="toggleDetail({{ product.id }})">자세히 보기</button>
-            <button type="button" onclick="addToCart({{ product.id }})">+ 장바구니 담기</button>
+            {% if user.is_authenticated %}
+                <button type="button" onclick="addToCart({{ product.id }})">+ 장바구니 담기</button>
+            {% endif %}
 
             <div id="detail-{{ product.id }}" style="display:none;">
                 <p>{{ product.subtitle }}</p>
