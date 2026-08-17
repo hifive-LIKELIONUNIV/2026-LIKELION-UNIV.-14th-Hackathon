@@ -21,29 +21,18 @@
         </div>
     </div>
 
-    <!-- 선택 확인 모달 (기본 숨김) -->
-    <div id="confirm-modal"
-         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-                background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div style="background:#fff; color:#111; padding:24px 28px; border-radius:8px; text-align:center; min-width:260px;">
-            <p id="confirm-text"></p>
-            <div style="margin-top:16px; display:flex; gap:12px; justify-content:center;">
-                <button id="confirm-no" type="button">아니오</button>
-                <button id="confirm-yes" type="button">예</button>
-            </div>
-        </div>
+    <!-- 사진을 선택하기 전까지는 숨김 -->
+    <div style="margin-top:24px;">
+        <button id="select-btn" type="button" style="display:none;">선택하기</button>
     </div>
 
     <script>
         const selectionId = {{ selection.id }};
         const era = "{{ era }}";
 
-        const modal = document.getElementById('confirm-modal');
-        const confirmText = document.getElementById('confirm-text');
-        const confirmYes = document.getElementById('confirm-yes');
-        const confirmNo = document.getElementById('confirm-no');
-
-        let pendingChoice = null;
+        const options = document.querySelectorAll('.regen-option');
+        const selectBtn = document.getElementById('select-btn');
+        let selectedChoice = null;
 
         function getCookie(name) {
             const value = `; ${document.cookie}`;
@@ -51,25 +40,21 @@
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
-        document.querySelectorAll('.regen-option').forEach((option, index) => {
+        options.forEach(option => {
             option.addEventListener('click', () => {
-                pendingChoice = option.dataset.choice;
-                confirmText.textContent = `${index + 1}번째 사진을 선택하시겠습니까?`;
-                modal.style.display = 'flex';
+                options.forEach(o => {
+                    o.querySelector('img').style.borderColor = '#ccc';
+                });
+                option.querySelector('img').style.borderColor = '#c98a4b';
+                selectedChoice = option.dataset.choice;
+                selectBtn.style.display = 'inline-block';
             });
         });
 
-        // 아니오 -> 모달만 닫고 선택 화면 그대로 유지
-        confirmNo.addEventListener('click', () => {
-            modal.style.display = 'none';
-            pendingChoice = null;
-        });
-
-        // 예 -> 서버에 확정 반영 후 결과 화면으로 이동
-        confirmYes.addEventListener('click', () => {
-            if (!pendingChoice) return;
-            confirmYes.disabled = true;
-            confirmNo.disabled = true;
+        // '선택하기' -> 선택 확정 후 기존 결과 화면으로 돌아감
+        selectBtn.addEventListener('click', () => {
+            if (!selectedChoice) return;
+            selectBtn.disabled = true;
 
             fetch(`/shop/capture/${selectionId}/era/${era}/regenerate/confirm/`, {
                 method: 'POST',
@@ -77,24 +62,20 @@
                     'X-CSRFToken': getCookie('csrftoken'),
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `choice=${pendingChoice}`,
+                body: `choice=${selectedChoice}`,
             })
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
                     console.error('[era_regen_confirm] 실패:', data.error);
-                    modal.style.display = 'none';
-                    confirmYes.disabled = false;
-                    confirmNo.disabled = false;
+                    selectBtn.disabled = false;
                     return;
                 }
                 window.location.href = data.redirect;
             })
             .catch(err => {
                 console.error('[era_regen_confirm] 요청 오류:', err);
-                modal.style.display = 'none';
-                confirmYes.disabled = false;
-                confirmNo.disabled = false;
+                selectBtn.disabled = false;
             });
         });
     </script>

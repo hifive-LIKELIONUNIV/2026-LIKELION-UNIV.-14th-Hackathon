@@ -1,9 +1,11 @@
 import base64
 import io
+import threading
 
 import qrcode
 from PIL import Image
 from django.core.files.base import ContentFile
+from django.db import close_old_connections
 from django.http import JsonResponse, Http404, HttpResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -177,8 +179,51 @@ def _get_or_create_result(selection, era):
     return result
 
 
+def _run_generation_in_background(result_id, target_field='generated_image'):
+    """다음 시대 이미지를 백그라운드 스레드에서 미리 생성.
+
+    호출하는 쪽에서 이미 result.status를 'processing'으로 바꿔둔 뒤 불러야 한다
+    (그래야 이 스레드가 끝나기 전에 다른 요청이 같은 result를 중복 생성하지 않음).
+    스레드는 별도 DB 커넥션을 쓰므로 시작/종료 시 close_old_connections()로 정리한다."""
+
+    def _run():
+        close_old_connections()
+        try:
+            result = PersonaResult.objects.get(id=result_id)
+            ai_service.generate_result(result, target_field=target_field)
+        except Exception as e:
+            print(f"[background_generate 실패] result={result_id}: {e}")
+            try:
+                PersonaResult.objects.filter(id=result_id).update(status='failed')
+            except Exception:
+                pass
+        finally:
+            close_old_connections()
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+def _prefetch_next_era(selection, era):
+    """현재 결과 화면(era)을 보고 있는 동안, 다음 시대 이미지를 미리 생성 시작.
+    2026(현재)은 합성이 아니라 실시간 촬영이라 프리페치 대상이 아님.
+    이미 시도(pending이 아님)된 적 있으면 건드리지 않는다 — 실패했던 걸 조용히
+    재시도하면 사용자 모르게 API 비용이 또 나갈 수 있으므로, 실패 후 재시도는
+    로딩 화면에서 사용자가 명시적으로 트리거하는 기존 흐름 그대로 둔다."""
+    upcoming_era = next_era(era)
+    if not upcoming_era or upcoming_era == '2026':
+        return
+
+    next_result, _ = PersonaResult.objects.get_or_create(selection=selection, era=upcoming_era)
+    if next_result.status != 'pending':
+        return
+
+    next_result.status = 'processing'
+    next_result.save()
+    _run_generation_in_background(next_result.id)
+
+
 def era_loading(request, selection_id, era):
-    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성은 era_generate로 fetch."""
+    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성/상태 확인은 fetch로 처리."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     if era not in ERA_ORDER:
         raise Http404("알 수 없는 시대입니다.")
@@ -195,6 +240,23 @@ def era_loading(request, selection_id, era):
     return render(request, 'shop/era_loading.html', context)
 
 
+def era_status(request, selection_id, era):
+    """로딩 화면 폴링용 — 백그라운드 프리페치를 포함해 현재 생성 상태만 조회."""
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    if era not in ERA_ORDER:
+        return JsonResponse({'error': '알 수 없는 시대입니다.'}, status=400)
+
+    result = _get_or_create_result(selection, era)
+
+    if result.status == 'done':
+        return JsonResponse({
+            'status': 'done',
+            'redirect': reverse('shop:era_result', args=[selection.id, era]),
+        })
+
+    return JsonResponse({'status': result.status})
+
+
 @require_POST
 def era_generate(request, selection_id, era):
     """실제 gpt-image-2 호출. 로딩 화면의 fetch가 이 엔드포인트를 호출."""
@@ -209,6 +271,12 @@ def era_generate(request, selection_id, era):
             'success': True,
             'redirect': reverse('shop:era_result', args=[selection.id, era]),
         })
+
+    if result.status == 'processing':
+        # 이미 백그라운드 프리페치(또는 다른 탭 요청)로 생성이 진행 중 —
+        # 여기서 또 생성을 시작하면 같은 결과를 두 번 만드는 셈이라 상태만 알려주고
+        # 프런트에서 폴링하도록 한다
+        return JsonResponse({'processing': True})
 
     result.status = 'processing'
     result.save()
@@ -240,10 +308,12 @@ def era_result(request, selection_id, era):
     if result.status != 'done':
         return redirect('shop:era_loading', selection_id=selection.id, era=era)
 
-    # "다시 생성"은 했는데 기존/새 사진 중 아직 고르지 않은 후보가 남아있으면
-    # (새로고침, 뒤로가기 등으로 선택 화면을 벗어난 경우) 선택 화면으로 되돌림
-    if result.regen_candidate_image:
-        return redirect('shop:era_regen_choose', selection_id=selection.id, era=era)
+    # 사용자가 이 결과를 보는 동안 다음 시대 이미지를 백그라운드에서 미리 생성 시작
+    _prefetch_next_era(selection, era)
+
+    # "다시 생성"으로 만든 후보가 아직 남아있으면(선택 전) 결과 화면에는 새로 만든
+    # 후보 이미지를 보여주고, "다시 생성" 대신 "사진 선택하기" 버튼을 노출한다.
+    has_candidate = bool(result.regen_candidate_image)
 
     context = {
         'selection': selection,
@@ -251,8 +321,9 @@ def era_result(request, selection_id, era):
         'era': era,
         'era_meta': ERA_META[era],
         'era_order': ERA_ORDER,
+        'has_candidate': has_candidate,
         # 2026(현재)은 합성이 아니라 원본 사진이라 다시 생성 대상이 아님
-        'can_regenerate': (not result.regenerated) and era != '2026',
+        'can_regenerate': (not has_candidate) and (not result.regenerated) and era != '2026',
         'next_era': next_era(era),
     }
     return render(request, 'shop/era_result.html', context)

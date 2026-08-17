@@ -19,6 +19,7 @@ urlpatterns = [
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
 
     path('capture/<int:selection_id>/era/<str:era>/loading/', views.era_loading, name='era_loading'),
+    path('capture/<int:selection_id>/era/<str:era>/status/', views.era_status, name='era_status'),
     path('capture/<int:selection_id>/era/<str:era>/generate/', views.era_generate, name='era_generate'),
     path('capture/<int:selection_id>/era/<str:era>/result/', views.era_result, name='era_result'),
     path('capture/<int:selection_id>/era/<str:era>/regenerate/', views.era_regenerate, name='era_regenerate'),
