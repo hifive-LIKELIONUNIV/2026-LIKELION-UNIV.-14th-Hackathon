@@ -89,6 +89,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # 시대별 이미지를 백그라운드에서 동시에 미리 생성하다 보니 쓰기가 겹칠 수 있음 —
+        # SQLite는 동시 쓰기를 하나만 허용해서, 기본 타임아웃(5초)보다 넉넉하게 잡아
+        # "database is locked" 에러 대신 잠깐 대기 후 처리되게 함
+        'OPTIONS': {
+            'timeout': 20,
+        },
     }
 }
 

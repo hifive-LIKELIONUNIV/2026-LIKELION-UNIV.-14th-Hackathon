@@ -8,12 +8,17 @@ from django.core.files.base import ContentFile
 from django.db import close_old_connections
 from django.http import JsonResponse, Http404, HttpResponse
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, CartItem, PersonaSelection, CapturedPhoto, PersonaResult
 from .constants import ERA_ORDER, ERA_META, next_era
 from . import ai_service
+
+# 백그라운드 생성이 이 시간보다 오래 'processing' 상태로 멈춰 있으면
+# (서버 재시작 등으로 스레드가 죽은 경우) 죽은 것으로 보고 재시도를 허용한다.
+STALE_PROCESSING_THRESHOLD = timezone.timedelta(minutes=2)
 
 
 def select_bag(request):
@@ -127,6 +132,13 @@ def choose_photo(request, selection_id):
     chosen_photo.is_chosen = True
     chosen_photo.save()
 
+    # 사진이 확정되는 순간, 처음 두 시대(1976·2005)를 바로 백그라운드로 미리 시작.
+    # 세 번째(2016)는 기존처럼 1976 결과를 보는 동안 한 칸씩 프리페치하도록 남겨둬서
+    # 동시 진행 개수를 최대 2개로 제한한다 (DB 쓰기 충돌/API 동시 요청 리스크 완화).
+    for era in ERA_ORDER[:2]:
+        if era != '2026':
+            _kick_off_era_generation(selection, era)
+
     # 사진 선택이 끝나면 첫 번째 시대(1976) 로딩 화면으로 이동
     return redirect('shop:era_loading', selection_id=selection.id, era=ERA_ORDER[0])
 
@@ -203,34 +215,47 @@ def _run_generation_in_background(result_id, target_field='generated_image'):
     threading.Thread(target=_run, daemon=True).start()
 
 
+def _kick_off_era_generation(selection, era):
+    """해당 시대의 PersonaResult가 아직 시작 전(pending)이면 백그라운드 생성을 시작한다.
+    이미 진행 중/완료/실패한 상태면 아무것도 하지 않는다 — 특히 실패했던 걸 여기서
+    조용히 재시도하면 사용자 모르게 API 비용이 또 나갈 수 있으므로, 실패 후 재시도는
+    로딩 화면에서 사용자가 명시적으로 트리거하는 기존 흐름 그대로 둔다."""
+    result, _ = PersonaResult.objects.get_or_create(selection=selection, era=era)
+    if result.status != 'pending':
+        return
+
+    result.status = 'processing'
+    result.save()
+    _run_generation_in_background(result.id)
+
+
 def _prefetch_next_era(selection, era):
     """현재 결과 화면(era)을 보고 있는 동안, 다음 시대 이미지를 미리 생성 시작.
-    2026(현재)은 합성이 아니라 실시간 촬영이라 프리페치 대상이 아님.
-    이미 시도(pending이 아님)된 적 있으면 건드리지 않는다 — 실패했던 걸 조용히
-    재시도하면 사용자 모르게 API 비용이 또 나갈 수 있으므로, 실패 후 재시도는
-    로딩 화면에서 사용자가 명시적으로 트리거하는 기존 흐름 그대로 둔다."""
+    2026(현재)은 합성이 아니라 실시간 촬영이라 프리페치 대상이 아님."""
     upcoming_era = next_era(era)
     if not upcoming_era or upcoming_era == '2026':
         return
+    _kick_off_era_generation(selection, upcoming_era)
 
-    next_result, _ = PersonaResult.objects.get_or_create(selection=selection, era=upcoming_era)
-    if next_result.status != 'pending':
-        return
 
-    next_result.status = 'processing'
-    next_result.save()
-    _run_generation_in_background(next_result.id)
+def _is_stale_processing(result):
+    """백그라운드 스레드가 죽었거나(서버 재시작 등) 응답 없이 오래 멈춰 있는지 확인.
+    'processing' 상태인데 STALE_PROCESSING_THRESHOLD보다 오래 갱신이 없으면 죽은 것으로 본다."""
+    return (
+        result.status == 'processing'
+        and timezone.now() - result.updated_at > STALE_PROCESSING_THRESHOLD
+    )
 
 
 def era_loading(request, selection_id, era):
-    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성/상태 확인은 fetch로 처리."""
+    """시대 이동 로딩 화면. 진행률 바는 JS가 채우고, 실제 생성/상태 확인은 fetch로 처리.
+
+    프리페치로 이미 status='done'이어도 여기서 바로 결과 화면으로 리다이렉트하지 않는다 —
+    그러면 로딩 화면 자체가 안 뜨면서 최소 노출 시간(MIN_VISIBLE_MS)이 적용될 기회가 없어짐.
+    대신 로딩 화면을 그대로 띄우고, JS가 상태 확인 후 최소 시간을 채운 뒤 넘어가게 한다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     if era not in ERA_ORDER:
         raise Http404("알 수 없는 시대입니다.")
-
-    result = _get_or_create_result(selection, era)
-    if result.status == 'done':
-        return redirect('shop:era_result', selection_id=selection.id, era=era)
 
     context = {
         'selection': selection,
@@ -272,11 +297,15 @@ def era_generate(request, selection_id, era):
             'redirect': reverse('shop:era_result', args=[selection.id, era]),
         })
 
-    if result.status == 'processing':
+    if result.status == 'processing' and not _is_stale_processing(result):
         # 이미 백그라운드 프리페치(또는 다른 탭 요청)로 생성이 진행 중 —
         # 여기서 또 생성을 시작하면 같은 결과를 두 번 만드는 셈이라 상태만 알려주고
         # 프런트에서 폴링하도록 한다
         return JsonResponse({'processing': True})
+
+    if result.status == 'processing':
+        # 'processing'인데 오래 갱신이 없음 -> 백그라운드 스레드가 죽은 것으로 보고 재시도
+        print(f"[era_generate] stale processing 감지, 재시도: selection={selection.id} era={era}")
 
     result.status = 'processing'
     result.save()

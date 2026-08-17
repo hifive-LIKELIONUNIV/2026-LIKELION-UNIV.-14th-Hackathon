@@ -7,6 +7,7 @@ image_test/generator.py + prompts.py의 로직을 실제 Django 모델
 """
 
 import base64
+import threading
 
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -17,6 +18,11 @@ from .face_utils import detect_face_height_ratio
 from .models import EraReference, PersonaResult
 
 MODEL = "gpt-image-2"
+
+# 여러 시대를 동시에 백그라운드로 미리 생성하다 보니, 프로세스 전체에서 실제로
+# OpenAI에 동시에 나가는 이미지 생성 요청 수를 제한해서 rate limit을 피한다.
+# (여러 방문자가 동시에 체험 중이어도 이 값을 넘는 요청은 줄을 서서 기다림)
+_GENERATION_SEMAPHORE = threading.Semaphore(2)
 
 # 감지된 원본 얼굴 비율보다 이 정도 배율만큼 작게 지정 (여전히 크다는 피드백으로 0.9 -> 0.8 -> 0.7로 축소)
 FACE_SIZE_SHRINK_FACTOR = 0.7
@@ -173,15 +179,18 @@ def generate_result(result: PersonaResult, target_field: str = 'generated_image'
     )
 
     # openai SDK가 bytes/io.IOBase/PathLike/tuple만 받기 때문에
-    # Django의 FieldFile을 그대로 넘기면 안 되고, 실제 파일 경로를 open()으로 열어서 넘겨야 함
-    with open(chosen_photo.image.path, 'rb') as face_file, open(reference.image.path, 'rb') as ref_file:
-        response = client.images.edit(
-            model=MODEL,
-            image=[face_file, ref_file],
-            prompt=prompt,
-            size="1152x1536",  # 3:4 비율
-            quality="medium",
-        )
+    # Django의 FieldFile을 그대로 넘기면 안 되고, 실제 파일 경로를 open()으로 열어서 넘겨야 함.
+    # 세마포어로 실제 API 호출 자체의 동시 실행 개수를 제한 (파일을 열어둔 채로 대기하지
+    # 않도록, open()은 세마포어를 획득한 뒤에 함)
+    with _GENERATION_SEMAPHORE:
+        with open(chosen_photo.image.path, 'rb') as face_file, open(reference.image.path, 'rb') as ref_file:
+            response = client.images.edit(
+                model=MODEL,
+                image=[face_file, ref_file],
+                prompt=prompt,
+                size="1152x1536",  # 3:4 비율
+                quality="medium",
+            )
 
     data = response.data[0]
     if not getattr(data, "b64_json", None):
