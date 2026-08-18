@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TIME PORTAL</title>
+</head>
+<body>
+    <h1>TIME PORTAL</h1>
+    <p>이제 어떤 여정을 이어가시겠어요?</p>
+
+    <form method="post" action="{% url 'shop:finish_selection' selection.id %}">
+        {% csrf_token %}
+        <button id="alone-btn" type="button">혼자 자유롭게 둘러볼게요</button>
+        <button id="with-staff-btn" type="button">직원과 함께 둘러볼게요</button>
+    </form>
+
+    <!-- 마무리 안내 모달 (기본 숨김) -->
+    <div id="finish-modal"
+         style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div style="background:#c98a4b; color:#fff; padding:28px 32px; border-radius:8px; text-align:center; max-width:320px;">
+            <p id="finish-modal-message"></p>
+            <a href="{% url 'restart' %}" style="display:inline-block; margin-top:16px; color:#fff;">처음으로</a>
+        </div>
+    </div>
+
+    <script>
+        const aloneBtn = document.getElementById('alone-btn');
+        const withStaffBtn = document.getElementById('with-staff-btn');
+        const finishModal = document.getElementById('finish-modal');
+        const finishModalMessage = document.getElementById('finish-modal-message');
+
+        const MESSAGES = {
+            alone: 'TIME PORTAL의 여정이 마무리되었습니다.<br>이제 MCM HAUS에서 마음에 든 제품을 직접 만나보세요.',
+            with_staff: 'TIME PORTAL의 여정이 마무리되었습니다.<br>잠시만 기다려주세요. 직원이 잠시 후 도착합니다.',
+        };
+
+        function showFinishModal(mode) {
+            finishModalMessage.innerHTML = MESSAGES[mode];
+            finishModal.style.display = 'flex';
+        }
+
+        aloneBtn.addEventListener('click', () => showFinishModal('alone'));
+        withStaffBtn.addEventListener('click', () => showFinishModal('with_staff'));
+    </script>
+</body>
+</html>

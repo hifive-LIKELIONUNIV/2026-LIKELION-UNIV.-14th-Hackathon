@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ era_meta.label }} 결과</title>
+</head>
+<body>
+    <h1>{{ era_meta.label }} 결과</h1>
+
+    <!-- 시대 타임라인 -->
+    <div style="margin-bottom:16px;">
+        {% for e in era_order %}
+            <span style="margin-right:16px; {% if e == era %}font-weight:bold; color:#c98a4b;{% else %}color:#888;{% endif %}">{{ e }}</span>
+        {% endfor %}
+    </div>
+
+    <div style="display:flex; gap:24px;">
+        <div style="position:relative; width:300px; height:400px; border:1px solid #444;">
+            {% if has_candidate %}
+                <img id="result-image" src="{{ result.regen_candidate_image.url }}"
+                     style="width:100%; height:100%; object-fit:cover; display:block;">
+            {% else %}
+                <img id="result-image" src="{{ result.generated_image.url }}"
+                     style="width:100%; height:100%; object-fit:cover; display:block;">
+            {% endif %}
+
+            <!-- 다시 생성 중 로딩 오버레이 (기본 숨김, 사진 창 안에서만 로딩) -->
+            <div id="regen-overlay"
+                 style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;
+                        background:rgba(0,0,0,0.6); color:#fff; flex-direction:column;
+                        align-items:center; justify-content:center;">
+                <div id="regen-progress-inner" style="width:70%; display:flex; flex-direction:column; align-items:center;">
+                    <div style="width:100%; height:6px; background:#333; border-radius:3px; overflow:hidden;">
+                        <div id="regen-progress-bar" style="width:0%; height:100%; background:#c98a4b;"></div>
+                    </div>
+                    <p id="regen-progress-text">0%</p>
+                </div>
+                <!-- 실패 시 여기로 전환 (기본 숨김) -->
+                <p id="regen-error-text" style="display:none; text-align:center; padding:0 12px;">
+                    다시 생성에 실패했어요. 잠시 후 다시 시도해주세요.
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <h2>{{ era_meta.title }}</h2>
+            <h3>{{ era_meta.subtitle }}</h3>
+            <p style="max-width:320px;">{{ era_meta.description }}</p>
+
+            <div style="margin-top:24px; display:flex; gap:12px;">
+                {% if has_candidate %}
+                    <a href="{% url 'shop:era_regen_choose' selection.id era %}"><button type="button">사진 선택하기</button></a>
+                {% elif can_regenerate %}
+                    <button id="regen-btn" type="button">다시 생성</button>
+                {% endif %}
+
+                {% if next_era == '2026' %}
+                    <a href="{% url 'shop:era_2026_capture' selection.id %}"><button type="button">다음 시대로</button></a>
+                {% elif next_era %}
+                    <a href="{% url 'shop:era_loading' selection.id next_era %}"><button type="button">다음 시대로</button></a>
+                {% else %}
+                    <a href="{% url 'shop:passport_result' selection.id %}"><button type="button">결과 모아보기</button></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const selectionId = {{ selection.id }};
+        const era = "{{ era }}";
+        const regenBtn = document.getElementById('regen-btn');
+        const overlay = document.getElementById('regen-overlay');
+        const regenProgressInner = document.getElementById('regen-progress-inner');
+        const regenBar = document.getElementById('regen-progress-bar');
+        const regenText = document.getElementById('regen-progress-text');
+        const regenErrorText = document.getElementById('regen-error-text');
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function showRegenError(detail) {
+            // 실제 에러 내용은 콘솔에만 남기고, 사용자에게는 짧은 안내만 보여준 뒤
+            // 원래 이미지로 되돌리고 "다시 생성" 버튼을 다시 노출한다
+            // (실패한 시도는 1회 제한 카운트에 포함시키지 않음 — 서버에서도 동일하게 처리됨)
+            console.error('[era_regenerate] 실패:', detail);
+            regenProgressInner.style.display = 'none';
+            regenErrorText.style.display = 'block';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                regenErrorText.style.display = 'none';
+                regenProgressInner.style.display = 'flex';
+                regenBar.style.width = '0%';
+                regenText.textContent = '0%';
+                if (regenBtn) regenBtn.style.display = 'inline-block';
+            }, 1800);
+        }
+
+        if (regenBtn) {
+            regenBtn.addEventListener('click', () => {
+                // 클릭 즉시 버튼 숨기고, 사진 창 안에서만 로딩 표시
+                // (성공했을 때만 1회 제한이 소모되므로, 실패하면 버튼을 다시 보여줌)
+                regenBtn.style.display = 'none';
+                overlay.style.display = 'flex';
+
+                const EXPECTED_DURATION = 18000;
+                const CAP = 92;
+                const startTime = Date.now();
+                let finished = false;
+
+                const tickTimer = setInterval(() => {
+                    if (finished) return;
+                    const elapsed = Date.now() - startTime;
+                    const pct = CAP * (1 - Math.exp(-elapsed / EXPECTED_DURATION));
+                    regenBar.style.width = pct.toFixed(0) + '%';
+                    regenText.textContent = pct.toFixed(0) + '%';
+                }, 200);
+
+                fetch(`/shop/capture/${selectionId}/era/${era}/regenerate/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                })
+                .then(res => res.json())
+                .then(data => {
+                    finished = true;
+                    clearInterval(tickTimer);
+                    if (data.error) {
+                        showRegenError(data.error);
+                        return;
+                    }
+                    // 새로 생성된 후보 이미지가 이 결과 화면에 그대로 반영되고,
+                    // "다시 생성" 버튼이 "사진 선택하기" 버튼으로 바뀌어야 하므로
+                    // 화면을 새로고침해서 서버가 다시 렌더링하게 한다
+                    regenBar.style.width = '100%';
+                    regenText.textContent = '100%';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 400);
+                })
+                .catch(err => {
+                    finished = true;
+                    clearInterval(tickTimer);
+                    showRegenError(err.message);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

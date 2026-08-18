@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ era_meta.label }} 사진 선택</title>
+</head>
+<body>
+    <h1>어떤 사진으로 할까요?</h1>
+    <p>마음에 드는 사진을 클릭해서 선택해주세요.</p>
+
+    <div style="display:flex; gap:24px;">
+        <div class="regen-option" data-choice="original" style="cursor:pointer;">
+            <p>1번째 사진 (기존)</p>
+            <img src="{{ result.generated_image.url }}" width="240" height="320"
+                 style="object-fit:cover; display:block; border:3px solid #ccc; border-radius:8px;">
+        </div>
+        <div class="regen-option" data-choice="candidate" style="cursor:pointer;">
+            <p>2번째 사진 (새로 생성)</p>
+            <img src="{{ result.regen_candidate_image.url }}" width="240" height="320"
+                 style="object-fit:cover; display:block; border:3px solid #ccc; border-radius:8px;">
+        </div>
+    </div>
+
+    <!-- 사진을 선택하기 전까지는 숨김 -->
+    <div style="margin-top:24px;">
+        <button id="select-btn" type="button" style="display:none;">선택하기</button>
+    </div>
+
+    <script>
+        const selectionId = {{ selection.id }};
+        const era = "{{ era }}";
+
+        const options = document.querySelectorAll('.regen-option');
+        const selectBtn = document.getElementById('select-btn');
+        let selectedChoice = null;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        options.forEach(option => {
+            option.addEventListener('click', () => {
+                options.forEach(o => {
+                    o.querySelector('img').style.borderColor = '#ccc';
+                });
+                option.querySelector('img').style.borderColor = '#c98a4b';
+                selectedChoice = option.dataset.choice;
+                selectBtn.style.display = 'inline-block';
+            });
+        });
+
+        // '선택하기' -> 선택 확정 후 기존 결과 화면으로 돌아감
+        selectBtn.addEventListener('click', () => {
+            if (!selectedChoice) return;
+            selectBtn.disabled = true;
+
+            fetch(`/shop/capture/${selectionId}/era/${era}/regenerate/confirm/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `choice=${selectedChoice}`,
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('[era_regen_confirm] 실패:', data.error);
+                    selectBtn.disabled = false;
+                    return;
+                }
+                window.location.href = data.redirect;
+            })
+            .catch(err => {
+                console.error('[era_regen_confirm] 요청 오류:', err);
+                selectBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html>
