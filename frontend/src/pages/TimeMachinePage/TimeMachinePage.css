@@ -64,6 +64,13 @@
   height: 25.6836vh;
 }
 
+.tm-page__side-glow--bottom-right {
+  bottom: 0;
+  right: 0;
+  width: 32.2917vw;
+  height: 25.6836vh;
+}
+
 .tm-page__content {
   position: relative;
   z-index: 2;

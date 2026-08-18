@@ -43,6 +43,14 @@ DEBUG = True
 # DEBUG=True인 동안만 쓰는 값이라 지금은 괜찮지만, 실제 배포 시에는 실제 도메인/IP로 좁혀야 함.
 ALLOWED_HOSTS = ['*']
 
+# React(Vite) 개발 서버가 /api, /shop 등을 이 서버로 프록시(changeOrigin)하기 때문에
+# Django가 보는 Host는 이 서버 자신이 되지만, 브라우저가 보내는 Origin 헤더는
+# 여전히 localhost:5173이라 CSRF의 Origin 검사가 실패한다 -> 신뢰 origin으로 등록.
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]
+
 
 # Application definition
 

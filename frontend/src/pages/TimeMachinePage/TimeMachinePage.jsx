@@ -9,6 +9,7 @@ import stampImage from '../../assets/images/image 83.png'
 import glowLeftImage from '../../assets/images/글로우 왼쪽.png'
 import glowCenterImage from '../../assets/images/중앙 글로우.png'
 import glowRightImage from '../../assets/images/오른쪽 글로우.png'
+import glowBottomRightImage from '../../assets/images/글로우 오른쪽 하단.svg'
 import './TimeMachinePage.css'
 
 const BAGS = [
@@ -80,6 +81,12 @@ function TimeMachinePage() {
       <img
         src={glowRightImage}
         className="tm-page__side-glow tm-page__side-glow--right"
+        alt=""
+        aria-hidden="true"
+      />
+      <img
+        src={glowBottomRightImage}
+        className="tm-page__side-glow tm-page__side-glow--bottom-right"
         alt=""
         aria-hidden="true"
       />
