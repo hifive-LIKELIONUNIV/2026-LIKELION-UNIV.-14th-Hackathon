@@ -15,6 +15,7 @@ function PhotoPage() {
   }
 
   const handleCapture = () => {
+    // 촬영 시작 페이지로 location.state 함께 전달하며 이동
     navigate('/photo-capture', { state: location.state })
   }
 

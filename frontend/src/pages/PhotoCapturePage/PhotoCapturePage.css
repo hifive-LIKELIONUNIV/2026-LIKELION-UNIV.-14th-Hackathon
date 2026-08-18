@@ -157,7 +157,7 @@ section {
 
 .capture-frame .corner {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   width: 50px;
   height: 50px;
   border: 2px solid #a26230;
@@ -196,12 +196,12 @@ section {
   object-fit: cover;
   border-radius: 4px;
   transform: scaleX(-1);
-  z-index: 0;
+  z-index: 1;
 }
 
 .camera-status-text {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   font-size: 13px;
   color: var(--text-sub);
   padding: 0 16px;
@@ -214,29 +214,18 @@ section {
   color: #e0503a;
 }
 
-.capture-start-btn {
-  margin-top: 28px;
-  padding: 14px 32px;
-  border-radius: 999px;
-  border: none;
-  background: var(--accent);
-  color: #17130f;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .countdown-number {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   font-size: 72px;
   font-weight: 700;
   color: #fff;
   line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
 }
 
 .shot-counter {
-  margin-top: 24px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -244,7 +233,7 @@ section {
 }
 
 .shot-counter-num {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--accent);
 }
@@ -255,7 +244,7 @@ section {
 }
 
 .disclaimer {
-  margin-top: 28px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,6 +263,50 @@ section {
   flex-shrink: 0;
   width: 15px;
   height: 15px;
+}
+
+.capture-btn {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #a26230;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 9px;
+  padding: 14px 43px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.capture-btn:hover {
+  background: var(--accent-bright);
+}
+
+.capture-btn:active {
+  transform: scale(0.97);
+}
+
+.btn-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 20px;
+}
+
+.capture-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.camera-lens-sm {
+  width: 9px;
+  height: 9px;
+  border-width: 1.9px;
+  border-color: #ffffff;
 }
 
 @media (max-width: 660px) {
@@ -312,5 +345,13 @@ section {
   .info-icon {
     display: inline-flex;
     margin-top: 2px;
+  }
+
+  .capture-btn {
+    width: 100%;
+    max-width: 360px;
+    justify-content: center;
+    margin-top: auto;
+    padding: 16px 20px;
   }
 }

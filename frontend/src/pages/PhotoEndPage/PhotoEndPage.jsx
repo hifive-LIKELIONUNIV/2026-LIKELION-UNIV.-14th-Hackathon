@@ -11,6 +11,7 @@ function PhotoEndPage() {
   const location = useLocation()
   const selectionId = location.state?.selectionId ?? getSelectionId()
   const photos = location.state?.photos ?? []
+  
   const [selectedIndex, setSelectedIndex] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -33,6 +34,8 @@ function PhotoEndPage() {
       const formData = new FormData()
       formData.append('photo_id', chosenPhoto.id)
       await apiPostForm(`/shop/capture/${selectionId}/choose/submit/`, formData)
+      
+      // 장고 서브밋 성공 시 로딩 페이지로 이동
       navigate('/loading-1976', { state: { ...location.state, selectionId } })
     } catch (err) {
       setError(err.message || '사진 선택에 실패했어요.')
