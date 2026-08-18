@@ -5,19 +5,46 @@ import "./PeriodPage1976Select.css";
 function PeriodPage1976Select() {
   const navigate = useNavigate();
   const location = useLocation();
-  const photos = location.state?.photos ?? [null, null];
+
+  const selectionId = location.state?.selectionId;
+  const originalImage = location.state?.originalImage;
+  const candidateImage = location.state?.candidateImage;
+
+  // 0: 원본(original), 1: 새로 생성된 사진(candidate)
+  const photos = [originalImage, candidateImage];
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   const handleSelect = (index) => {
     setSelectedIndex(index);
   };
 
-  const handleConfirm = () => {
+const handleConfirm = async () => {
     if (selectedIndex === null) return;
-    // 1976 페이지로 복귀. regenerated: true 를 넘겨 '다시 생성' 버튼이 보이지 않게 한다.
-    navigate("/period/1976", {
-      state: { photo: photos[selectedIndex], regenerated: true },
-    });
+
+    const selectedPhotoUrl = photos[selectedIndex];
+
+    try {
+      /*
+      // [백엔드 연동 시 실제 코드 - POST /regenerate/confirm/]
+      const chosenType = selectedIndex === 0 ? "original" : "candidate";
+      await fetch(`/shop/capture/${selectionId}/era/1976/regenerate/confirm/`, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ choice: chosenType })
+      });
+      */
+
+      // 선택된 최종 사진과 함께 1976 메인 화면으로 복귀
+      navigate("/period/1976", {
+        state: {
+          selectionId,
+          photo: selectedPhotoUrl,
+          regenerated: true, // 선택 완료 후 '다시 생성' 버튼 숨김 처리용
+        },
+      });
+    } catch (error) {
+      console.error("확정 전송 실패:", error);
+    }
   };
 
   return (
@@ -61,7 +88,7 @@ function PeriodPage1976Select() {
                 <img
                   src={photo}
                   className="select-photo-img"
-                  alt={`재생성된 1976년 장면 ${index + 1}`}
+                  alt={index === 0 ? "기존 사진" : "재생성된 사진"}
                 />
               ) : (
                 <div

@@ -5,18 +5,23 @@ import './PeriodPage2005Select.css'
 function PeriodPage2005Select() {
   const navigate = useNavigate()
   const location = useLocation()
-  const photos = location.state?.photos ?? [null, null]
-  const [selectedIndex, setSelectedIndex] = useState(null)
 
-  const handleSelect = (index) => {
-    setSelectedIndex(index)
-  }
+  const originalImage = location.state?.originalImage
+  const candidateImage = location.state?.candidateImage
+  const previousSelectedPhotos = location.state?.selectedPhotos || {}
+
+  const photos = [originalImage, candidateImage]
+  const [selectedIndex, setSelectedIndex] = useState(null)
 
   const handleConfirm = () => {
     if (selectedIndex === null) return
-    // 2005 페이지로 복귀. regenerated: true 를 넘겨 '다시 생성' 버튼이 보이지 않게 한다.
+
     navigate('/period/2005', {
-      state: { photo: photos[selectedIndex], regenerated: true },
+      state: {
+        photo: photos[selectedIndex],
+        regenerated: true,
+        selectedPhotos: previousSelectedPhotos, // 이전 시대 정보 유지
+      },
     })
   }
 
@@ -50,24 +55,18 @@ function PeriodPage2005Select() {
               className={`select-photo-frame ${
                 selectedIndex === index ? 'selected' : ''
               }`}
-              onClick={() => handleSelect(index)}
+              onClick={() => setSelectedIndex(index)}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleSelect(index)
-              }}
             >
               {photo ? (
                 <img
                   src={photo}
                   className="select-photo-img"
-                  alt={`재생성된 2005년 장면 ${index + 1}`}
+                  alt={`2005년 후보 ${index + 1}`}
                 />
               ) : (
-                <div
-                  className="select-photo-placeholder"
-                  aria-hidden="true"
-                />
+                <div className="select-photo-placeholder" />
               )}
             </div>
           ))}

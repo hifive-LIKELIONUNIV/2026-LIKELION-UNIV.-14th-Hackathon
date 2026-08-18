@@ -5,27 +5,56 @@ import './PeriodPage2005.css'
 function PeriodPage2005() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  // 1. 이전 시대들에서 선택했던 사진 객체 가져오기 (없으면 빈 객체)
+  const previousSelectedPhotos = location.state?.selectedPhotos || {}
+
+  // 2005 선택 페이지에서 골라온 사진 및 선택 완료 여부
+  const selectedPhotoFromChoose = location.state?.photo ?? null
+  const isFinalized = Boolean(location.state?.regenerated)
+
   const [isRegenerating, setIsRegenerating] = useState(false)
 
-  // 재생성 선택 페이지(PeriodPage2005Select)에서 사진을 고르고 돌아온 경우
-  // location.state.regenerated 가 true로 넘어오며, 이때는 '다시 생성' 버튼을 숨긴다.
-  const isFinalized = Boolean(location.state?.regenerated)
-  const currentPhoto = location.state?.photo ?? null
+  // 기본 사진 및 화면 표시 사진
+  const initialImage =
+    location.state?.photo ||
+    "https://via.placeholder.com/400x533/2b2620/AC7D58?text=2005+Initial+Photo"
+  const displayImage = selectedPhotoFromChoose || initialImage
 
-  const handleRegenerate = () => {
-    console.log('다시 생성 클릭됨')
-    setIsRegenerating(true)
-
-    // TODO: 실제 이미지 재생성 API 호출로 교체.
-    // 아래는 2초 후 재생성된 두 장의 후보 사진을 들고 선택 페이지로 이동하는 자리표시자입니다.
-    setTimeout(() => {
-      const candidatePhotos = [currentPhoto, currentPhoto]
-      navigate('/period/2005/select', { state: { photos: candidatePhotos } })
-    }, 2000)
+  // 현재 2005에서 선택된 사진을 누적 객체에 업데이트
+  const updatedSelectedPhotos = {
+    ...previousSelectedPhotos,
+    2005: displayImage,
   }
 
+  // [다시 생성] 핸들러
+  const handleRegenerate = () => {
+    setIsRegenerating(true)
+
+    setTimeout(() => {
+      setIsRegenerating(false)
+
+      const originalImage = displayImage
+      const candidateImage =
+        "https://via.placeholder.com/400x533/3d342c/AC7D58?text=2005+Regenerated+Candidate"
+
+      navigate('/period/2005/select', {
+        state: {
+          originalImage,
+          candidateImage,
+          selectedPhotos: previousSelectedPhotos, // 이전 시대 사진 보존
+        },
+      })
+    }, 1500)
+  }
+
+  // [다음 시대로] 버튼 핸들러 -> 2016으로 이동 시 누적된 사진 객체 전달
   const handleNextPeriod = () => {
-    navigate('/period/2016')
+    navigate('/period/2016', {
+      state: {
+        selectedPhotos: updatedSelectedPhotos,
+      },
+    })
   }
 
   return (
@@ -50,30 +79,37 @@ function PeriodPage2005() {
           <div
             className="imgPage"
             style={
-              currentPhoto
-                ? { backgroundImage: `url(${currentPhoto})` }
+              !isRegenerating && displayImage
+                ? { backgroundImage: `url(${displayImage})` }
                 : undefined
             }
           >
+            {/* 스피너 및 안내 문구 */}
             {isRegenerating && (
-              <svg
-                className="loadingSpinner"
-                viewBox="0 0 100 100"
-                aria-label="다시 생성 중"
-                role="status"
-              >
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  fill="none"
-                  stroke="#AC7D58"
-                  strokeWidth="9"
-                  strokeLinecap="round"
-                  pathLength="100"
-                  strokeDasharray="75 100"
-                />
-              </svg>
+              <div className="loading-container">
+                <svg
+                  className="loadingSpinner"
+                  viewBox="0 0 100 100"
+                  aria-label="이미지 생성 중"
+                  role="status"
+                >
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="#AC7D58"
+                    strokeWidth="9"
+                    strokeLinecap="round"
+                    pathLength="100"
+                    strokeDasharray="75 100"
+                  />
+                </svg>
+                <div className="loading-text">
+                  <p>장면을 준비하고 있어요.</p>
+                  <p>잠시만 기다려주세요.</p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -99,7 +135,11 @@ function PeriodPage2005() {
                   다시 생성
                 </button>
               )}
-              <button type="button" onClick={handleNextPeriod}>
+              <button
+                type="button"
+                onClick={handleNextPeriod}
+                disabled={isRegenerating}
+              >
                 <div>다음 시대로</div>
                 <div>&#8250;</div>
               </button>

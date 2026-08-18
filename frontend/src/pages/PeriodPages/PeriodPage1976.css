@@ -90,7 +90,7 @@ html {
   position: relative;
 }
 
-.loadingSpinner {
+/* .loadingSpinner {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -99,7 +99,7 @@ html {
   margin: -32px 0 0 -32px;
   transform-origin: 50% 50%;
   animation: spin 1s linear infinite;
-}
+} */
 
 @keyframes spin {
   to {
@@ -182,6 +182,39 @@ html {
 
 .select button:last-child div:last-child {
   font-weight: 700;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  /* 스피너와 텍스트 사이의 여백을 넉넉하게 배치 */
+  gap: 36px;
+}
+
+.loadingSpinner {
+  width: 60px;
+  height: 60px;
+  transform-origin: 50% 50%;
+  animation: spin 1s linear infinite;
+  /* flex 자식 요소로서 고정 크기 유지 */
+  flex-shrink: 0;
+}
+
+.loading-text {
+  color: rgba(142, 142, 142, 1);
+  font-size: 15px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.6;
+  letter-spacing: -0.02em;
+}
+
+.loading-text p {
+  margin: 0;
 }
 
 @media (max-width: 660px) {
