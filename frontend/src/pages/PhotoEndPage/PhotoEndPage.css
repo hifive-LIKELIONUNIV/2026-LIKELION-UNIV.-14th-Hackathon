@@ -193,6 +193,12 @@ section {
   background: #e2e2e2;
 }
 
+.photo-end-error {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #e0503a;
+}
+
 .primary-btn {
   margin-top: 32px;
   display: inline-flex;

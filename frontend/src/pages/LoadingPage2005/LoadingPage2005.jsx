@@ -1,34 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
 import bgImage from '../../assets/images/2005 배경원본.png'
+import { useEraGeneration } from '../../hooks/useEraGeneration.js'
+import { getSelectionId } from '../../api/session.js'
 import './LoadingPage2005.css'
+
+const ERA = '2005'
 
 function LoadingPage2005() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [progress, setProgress] = useState(0)
+  const selectionId = location.state?.selectionId ?? getSelectionId()
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((current) => {
-        if (current >= 100) {
-          clearInterval(timer)
-          return 100
-        }
-        return Math.min(current + Math.random() * 15 + 5, 100)
-      })
-    }, 300)
+  const handleDone = useCallback(() => {
+    navigate(`/period/${ERA}`, { state: { ...location.state, selectionId } })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, selectionId])
 
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/period/2005', { state: location.state })
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [navigate, location.state])
+  const { progress, error, retry } = useEraGeneration(selectionId, ERA, handleDone)
 
   return (
     <div className="loading-page loading-page--2005">
@@ -41,22 +31,35 @@ function LoadingPage2005() {
 
           <p className="loading-page__year">2005</p>
 
-          <div
-            className="loading-page__progress-track"
-            role="progressbar"
-            aria-valuenow={Math.round(progress)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <div
-              className="loading-page__progress-fill"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+          {error ? (
+            <>
+              <p className="loading-page__caption">
+                이미지 생성에 실패했어요. 잠시 후 다시 시도해주세요.
+              </p>
+              <button type="button" className="loading-page__retry" onClick={retry}>
+                다시 시도
+              </button>
+            </>
+          ) : (
+            <>
+              <div
+                className="loading-page__progress-track"
+                role="progressbar"
+                aria-valuenow={Math.round(progress)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="loading-page__progress-fill"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
 
-          <p className="loading-page__caption">
-            MCM이 성주그룹과 함께 새롭게 시작한 시대로 이동합니다.
-          </p>
+              <p className="loading-page__caption">
+                MCM이 성주그룹과 함께 새롭게 시작한 시대로 이동합니다.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

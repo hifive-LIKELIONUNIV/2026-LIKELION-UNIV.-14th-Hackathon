@@ -3,11 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import bgImage from '../../assets/images/image 1.png'
+import { clearSelection } from '../../api/session.js'
 import './FinalPage.css'
 
 function FinalPage() {
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false)
+
+  const handleRestart = () => {
+    // 키오스크 특성상 다음 사용자를 위해 세션/장바구니를 초기화
+    fetch('/restart/', { credentials: 'include' }).catch(() => {})
+    clearSelection()
+    navigate('/')
+  }
 
   return (
     <div className="final-page">
@@ -51,7 +59,7 @@ function FinalPage() {
               <button
                 type="button"
                 className="final-page__restart"
-                onClick={() => navigate('/')}
+                onClick={handleRestart}
               >
                 처음으로
               </button>

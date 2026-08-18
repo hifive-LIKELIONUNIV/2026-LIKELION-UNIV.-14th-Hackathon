@@ -241,3 +241,8 @@ html {
         justify-content: center;
     }
 }
+.period-error {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #e0503a;
+}

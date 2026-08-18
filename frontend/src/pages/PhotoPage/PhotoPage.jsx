@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
 import cameraIconYellow from '../../assets/images/사진 촬영_카메라 icon_황색.svg'
@@ -8,13 +8,14 @@ import './PhotoPage.css'
 
 function PhotoPage() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleBack = () => {
     navigate(-1)
   }
 
   const handleCapture = () => {
-    navigate('/photo-capture')
+    navigate('/photo-capture', { state: location.state })
   }
 
   return (

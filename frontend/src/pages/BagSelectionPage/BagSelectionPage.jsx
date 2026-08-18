@@ -1,47 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import starkBackpackImage from '../../assets/images/image 54.png'
 import diamondBagImage from '../../assets/images/image 55.png'
 import lizShopperImage from '../../assets/images/image 56.png'
 import arrowIcon from '../../assets/images/Vector.png'
+import { apiGet, apiPostJson } from '../../api/client.js'
+import { setSelectionId } from '../../api/session.js'
 import './BagSelectionPage.css'
 
-const BAGS = [
-  {
-    id: 'stark-backpack',
-    name: 'Stark Backpack',
-    description: ['도시 이동에 최적화된', '시그니처 백팩'],
-    image: starkBackpackImage,
-  },
-  {
-    id: 'diamond-bag',
-    name: 'Diamond Bag',
-    description: ['다이아몬드 문양을', '재해석한 구조적 토트백'],
-    image: diamondBagImage,
-  },
-  {
-    id: 'liz-shopper',
-    name: 'Liz Shopper',
-    description: ['넉넉하고 유연한', '데일리 쇼퍼백'],
-    image: lizShopperImage,
-  },
-]
+// 상품 이미지가 아직 없는 경우(관리자 페이지 미등록)를 대비한 자리표시 이미지
+const FALLBACK_IMAGES = [starkBackpackImage, diamondBagImage, lizShopperImage]
 
 function BagSelectionPage() {
   const navigate = useNavigate()
+  const [bags, setBags] = useState([])
   const [selectedId, setSelectedId] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleNext = () => {
-    const selectedBag = BAGS.find((bag) => bag.id === selectedId)
-    navigate('/timemachine', {
-      state: {
-        bag: selectedBag && {
-          ...selectedBag,
-          description: selectedBag.description.join(' '),
-        },
-      },
-    })
+  useEffect(() => {
+    let cancelled = false
+    apiGet('/api/shop/products/')
+      .then((data) => {
+        if (cancelled) return
+        setBags(
+          data.products.map((product, index) => ({
+            ...product,
+            image: product.image_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
+          })),
+        )
+      })
+      .catch(() => {
+        if (!cancelled) setError('가방 목록을 불러오지 못했습니다.')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const handleNext = async () => {
+    const selectedBag = bags.find((bag) => bag.id === selectedId)
+    if (!selectedBag) return
+
+    setSubmitting(true)
+    setError('')
+    try {
+      const { selection_id: selectionId } = await apiPostJson('/api/shop/select/', {
+        product_id: selectedBag.id,
+      })
+      setSelectionId(selectionId)
+      navigate('/timemachine', {
+        state: { bag: selectedBag, selectionId },
+      })
+    } catch (err) {
+      setError(err.message || '가방을 선택하지 못했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -62,7 +78,7 @@ function BagSelectionPage() {
           </div>
 
           <div className="bag-page__grid">
-            {BAGS.map((bag) => (
+            {bags.map((bag) => (
               <button
                 key={bag.id}
                 type="button"
@@ -76,23 +92,21 @@ function BagSelectionPage() {
                   <img src={bag.image} alt={bag.name} />
                 </div>
                 <h3 className="bag-card__name">{bag.name}</h3>
-                <p className="bag-card__description">
-                  {bag.description[0]}
-                  <br />
-                  {bag.description[1]}
-                </p>
+                <p className="bag-card__description">{bag.subtitle}</p>
               </button>
             ))}
           </div>
+
+          {error && <p className="bag-page__error">{error}</p>}
 
           <div className="bag-page__footer">
             <button
               type="button"
               className="bag-page__next"
-              disabled={!selectedId}
+              disabled={!selectedId || submitting}
               onClick={handleNext}
             >
-              다음 단계로
+              {submitting ? '선택 중...' : '다음 단계로'}
               <img
                 src={arrowIcon}
                 className="bag-page__next-arrow"

@@ -1,16 +1,49 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import mcmLogo from '../../assets/images/a5ec94c46d1ed7fd47ce06cad157f54ff1b65eb8.png'
+import { apiGet } from '../../api/client.js'
+import { getSelectionId } from '../../api/session.js'
 import './PhotoFramePage.css'
+
+const ERA_ORDER = ['1976', '2005', '2016', '2026']
 
 function PhotoFramePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const selectionId = location.state?.selectionId ?? getSelectionId()
+
+  const [passport, setPassport] = useState(null)
+
+  useEffect(() => {
+    if (!selectionId) return undefined
+    let cancelled = false
+
+    function fetchPassport() {
+      apiGet(`/api/shop/capture/${selectionId}/passport/`).then((data) => {
+        if (cancelled) return
+        setPassport(data)
+        if (!data.ready) {
+          setTimeout(fetchPassport, 1500)
+        }
+      })
+    }
+
+    fetchPassport()
+    return () => {
+      cancelled = true
+    }
+  }, [selectionId])
+
+  const imagesByEra = Object.fromEntries(
+    (passport?.results ?? []).map((r) => [r.era, r.image_url]),
+  )
 
   const handleBack = () => {
     navigate(-1)
   }
 
   const handleNext = () => {
-    navigate('/choose')
+    navigate('/choose', { state: { ...location.state, selectionId } })
   }
 
   return (
@@ -38,23 +71,33 @@ function PhotoFramePage() {
         <div className="frame-subtitle">MCM과 함께한 여정을 확인하세요.</div>
 
         <div className="content-row">
-          {/* 왼쪽: 4컷 프레임 */}
           <div className="frame-card">
             <div className="frame-grid">
-              <div className="frame" />
-              <div className="frame" />
-              <div className="frame" />
-              <div className="frame" />
+              {ERA_ORDER.map((era) => (
+                <div
+                  key={era}
+                  className="frame"
+                  style={
+                    imagesByEra[era]
+                      ? { backgroundImage: `url(${imagesByEra[era]})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                      : undefined
+                  }
+                />
+              ))}
             </div>
             <img src={mcmLogo} className="frame-stamp" alt="" />
           </div>
 
-          {/* 오른쪽: QR 영역 (QR 생성은 백엔드에서 처리, 여기는 자리만) */}
           <div className="qr-panel">
             <div className="qr-title">사진을 휴대폰에 저장하세요</div>
 
-            {/* TODO: 백엔드에서 QR 코드 이미지 URL 내려주면 여기에 렌더링 */}
-            <div className="qr-box" />
+            {selectionId && (
+              <img
+                className="qr-box"
+                src={`/shop/capture/${selectionId}/passport/qrcode/`}
+                alt="QR 코드"
+              />
+            )}
 
             <div className="qr-caption">휴대폰으로 QR코드를 스캔해주세요</div>
 

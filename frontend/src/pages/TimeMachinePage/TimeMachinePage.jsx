@@ -39,9 +39,9 @@ function TimeMachinePage() {
   const selectedBag = location.state?.bag ?? BAGS[0]
 
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/photo'), 3000)
+    const timer = setTimeout(() => navigate('/photo', { state: location.state }), 3000)
     return () => clearTimeout(timer)
-  }, [navigate])
+  }, [navigate, location.state])
 
   return (
     <div className="tm-page">

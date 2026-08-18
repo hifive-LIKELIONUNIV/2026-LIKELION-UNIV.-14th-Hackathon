@@ -132,6 +132,7 @@
   background: #d9d9d9;
   border-radius: 6px;
   margin-bottom: 18px;
+  object-fit: contain;
 }
 
 .qr-caption {

@@ -87,3 +87,17 @@
   line-height: 1;
   letter-spacing: 0.02em;
 }
+
+
+.loading-page__retry {
+  margin-top: 2.2222cqw;
+  padding: 1.1111cqw 2.2222cqw;
+  border-radius: 999px;
+  border: none;
+  background: #a26230;
+  color: #fff;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.25cqw;
+  font-weight: 700;
+  cursor: pointer;
+}

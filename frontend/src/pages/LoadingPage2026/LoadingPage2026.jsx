@@ -28,7 +28,10 @@ function LoadingPage2026() {
       navigate('/period/2026', { state: location.state })
     }, 3000)
     return () => clearTimeout(timer)
-  }, [navigate, location.state])
+    // location.state를 그대로 넘기되, state 객체 자체가 매 렌더 새로 생성돼 재실행되지
+    // 않도록 selectionId만 의존성으로 둔다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, location.state?.selectionId])
 
   return (
     <div className="loading-page loading-page--2026">

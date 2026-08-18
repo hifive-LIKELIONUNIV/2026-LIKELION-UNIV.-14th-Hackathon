@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { ensureCsrf } from './api/client.js'
 import StartPage from './pages/StartPage/StartPage.jsx'
 import LoginPage from './pages/LoginPage/LoginPage.jsx'
 import LoginProcessingPage from './pages/LoginProcessingPage/LoginProcessingPage.jsx'
@@ -21,6 +23,10 @@ import ChoosePage from './pages/ChoosePage/ChoosePage.jsx'
 import PhotoCapturePage from './pages/PhotoCapturePage/PhotoCapturePage.jsx'
 
 function App() {
+  useEffect(() => {
+    ensureCsrf()
+  }, [])
+
   return (
     <Routes>
       <Route path="/" element={<StartPage />} />

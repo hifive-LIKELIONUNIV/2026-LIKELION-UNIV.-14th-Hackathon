@@ -109,6 +109,7 @@ def save_photo(request, selection_id):
 
     return JsonResponse({
         'success': True,
+        'photo_id': photo.id,
         'photo_count': photo_count,
         'next_step': 'choose' if photo_count >= 2 else 'capture_again',
     })

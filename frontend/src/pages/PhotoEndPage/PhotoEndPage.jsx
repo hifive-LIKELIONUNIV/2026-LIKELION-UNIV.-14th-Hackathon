@@ -2,13 +2,18 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
+import { apiPostForm } from '../../api/client.js'
+import { getSelectionId } from '../../api/session.js'
 import './PhotoEndPage.css'
 
 function PhotoEndPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const photos = location.state?.photos ?? [null, null]
+  const selectionId = location.state?.selectionId ?? getSelectionId()
+  const photos = location.state?.photos ?? []
   const [selectedIndex, setSelectedIndex] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const handleBack = () => {
     navigate(-1)
@@ -18,9 +23,22 @@ function PhotoEndPage() {
     setSelectedIndex(index)
   }
 
-  const handleStartTravel = () => {
+  const handleStartTravel = async () => {
     if (selectedIndex === null) return
-    navigate('/loading-1976', { state: { photo: photos[selectedIndex] } })
+    const chosenPhoto = photos[selectedIndex]
+
+    setSubmitting(true)
+    setError('')
+    try {
+      const formData = new FormData()
+      formData.append('photo_id', chosenPhoto.id)
+      await apiPostForm(`/shop/capture/${selectionId}/choose/submit/`, formData)
+      navigate('/loading-1976', { state: { ...location.state, selectionId } })
+    } catch (err) {
+      setError(err.message || '사진 선택에 실패했어요.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -56,7 +74,7 @@ function PhotoEndPage() {
         <div className="photo-select-row">
           {photos.map((photo, index) => (
             <div
-              key={index}
+              key={photo.id ?? index}
               className={`photo-frame ${selectedIndex === index ? 'selected' : ''}`}
               onClick={() => handleSelect(index)}
               role="button"
@@ -65,9 +83,9 @@ function PhotoEndPage() {
                 if (e.key === 'Enter' || e.key === ' ') handleSelect(index)
               }}
             >
-              {photo ? (
+              {photo?.dataUrl ? (
                 <img
-                  src={photo}
+                  src={photo.dataUrl}
                   className="captured-photo"
                   alt={`촬영된 얼굴 사진 ${index + 1}`}
                 />
@@ -78,13 +96,15 @@ function PhotoEndPage() {
           ))}
         </div>
 
+        {error && <p className="photo-end-error">{error}</p>}
+
         <button
           type="button"
           className="primary-btn"
           onClick={handleStartTravel}
-          disabled={selectedIndex === null}
+          disabled={selectedIndex === null || submitting}
         >
-          선택한 사진으로 시간 여행 시작하기
+          {submitting ? '선택 중...' : '선택한 사진으로 시간 여행 시작하기'}
           <span className="primary-btn-arrow" aria-hidden="true">
             &#8250;
           </span>

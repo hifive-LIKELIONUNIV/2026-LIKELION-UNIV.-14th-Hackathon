@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import mcmCrestLogo from '../../assets/images/image 79.png'
+import { apiPostJson } from '../../api/client.js'
 import './LoginPage.css'
 
 function LoginPage() {
@@ -10,8 +11,9 @@ function LoginPage() {
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     const nextEmailError = email.trim() ? '' : '이메일 주소를 입력해주세요.'
@@ -23,7 +25,15 @@ function LoginPage() {
       return
     }
 
-    navigate('/processing')
+    setSubmitting(true)
+    try {
+      await apiPostJson('/api/accounts/login/', { email, password })
+      navigate('/processing')
+    } catch (err) {
+      setPasswordError(err.message || '로그인에 실패했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -74,8 +84,8 @@ function LoginPage() {
               {passwordError && <p className="login-page__error">{passwordError}</p>}
             </div>
 
-            <button type="submit" className="login-page__submit">
-              로그인하기
+            <button type="submit" className="login-page__submit" disabled={submitting}>
+              {submitting ? '로그인 중...' : '로그인하기'}
             </button>
           </form>
 

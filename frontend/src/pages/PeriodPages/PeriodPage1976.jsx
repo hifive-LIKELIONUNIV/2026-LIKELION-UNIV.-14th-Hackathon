@@ -2,24 +2,49 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
 import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
+import RegenCompareModal from '../../components/RegenCompareModal/RegenCompareModal.jsx'
+import { useEraResult } from '../../hooks/useEraResult.js'
+import { apiPostForm } from '../../api/client.js'
+import { getSelectionId } from '../../api/session.js'
 import './PeriodPage1976.css'
+
+const ERA = '1976'
 
 function PeriodPage1976() {
   const navigate = useNavigate()
   const location = useLocation()
+  const selectionId = location.state?.selectionId ?? getSelectionId()
   const [showBagInfo, setShowBagInfo] = useState(false)
+  const [showRegenModal, setShowRegenModal] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [error, setError] = useState('')
+
+  const { result, refetch } = useEraResult(selectionId, ERA)
 
   const toggleBagInfo = () => {
     setShowBagInfo((prev) => !prev)
   }
 
-  const handleRegenerate = () => {
-    // TODO: '다시 생성' 로직 연결
-    console.log('다시 생성 클릭됨')
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    setError('')
+    try {
+      await apiPostForm(`/shop/capture/${selectionId}/era/${ERA}/regenerate/`, new FormData())
+      setShowRegenModal(true)
+    } catch (err) {
+      setError(err.message || '다시 생성에 실패했어요.')
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  const handleRegenConfirmed = () => {
+    setShowRegenModal(false)
+    refetch()
   }
 
   const handleNextPeriod = () => {
-    navigate('/loading-2005', { state: location.state })
+    navigate('/loading-2005', { state: { ...location.state, selectionId } })
   }
 
   return (
@@ -35,7 +60,10 @@ function PeriodPage1976() {
         </header>
 
         <section>
-          <div className="imgPage" />
+          <div
+            className="imgPage"
+            style={result?.image_url ? { backgroundImage: `url(${result.image_url})` } : undefined}
+          />
 
           <div className="content">
             <div>
@@ -84,9 +112,15 @@ function PeriodPage1976() {
               </div>
             )}
 
+            {error && <p className="period-error">{error}</p>}
+
             <div className="select">
-              <button type="button" onClick={handleRegenerate}>
-                다시 생성
+              <button
+                type="button"
+                onClick={handleRegenerate}
+                disabled={!result?.can_regenerate || regenerating}
+              >
+                {regenerating ? '생성 중...' : '다시 생성'}
               </button>
               <button type="button" onClick={handleNextPeriod}>
                 <div>다음 시대로</div>
@@ -96,6 +130,15 @@ function PeriodPage1976() {
           </div>
         </section>
       </div>
+
+      {showRegenModal && (
+        <RegenCompareModal
+          selectionId={selectionId}
+          era={ERA}
+          onClose={() => setShowRegenModal(false)}
+          onConfirmed={handleRegenConfirmed}
+        />
+      )}
     </div>
   )
 }

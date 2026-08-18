@@ -72,6 +72,14 @@
   letter-spacing: -0.02em;
 }
 
+.bag-page__error {
+  margin: 1.1111cqw 0 0;
+  text-align: center;
+  color: #e0503a;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.1111cqw;
+}
+
 .bag-page__grid {
   display: flex;
   justify-content: center;
