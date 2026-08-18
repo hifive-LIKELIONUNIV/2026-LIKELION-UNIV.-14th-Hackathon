@@ -7,6 +7,8 @@ import { getSelectionId } from '../../api/session.js'
 import './PeriodPage2026.css'
 
 const COUNTDOWN_START = 5
+const ERA = '2026'
+const ERAS = ['1976', '2005', '2016', '2026']
 
 // era_2026_capture.html과 동일한 크롭/좌우반전 캡처 로직.
 function captureFrame(video, canvas) {
@@ -124,11 +126,16 @@ function PeriodPage2026() {
     <div className="page-wrap">
       <div className="page">
         <header>
-          <div className="timeline" style={{ '--progress': 1 }}>
-            <div className="year">1976</div>
-            <div className="year">2005</div>
-            <div className="year">2016</div>
-            <div className="year active">2026</div>
+          <div className="line">
+            <div className="rule" />
+            <div className="era">
+              {ERAS.map((year) => (
+                <span key={year} className={`year ${year === ERA ? 'active' : ''}`}>
+                  {year === ERA && <span className="dot" />}
+                  {year}
+                </span>
+              ))}
+            </div>
           </div>
         </header>
 

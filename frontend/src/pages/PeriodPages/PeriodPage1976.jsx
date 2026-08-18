@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
-import downArrow from '../../assets/images/가방정보설명_아래화살표.svg'
 import RegenCompareModal from '../../components/RegenCompareModal/RegenCompareModal.jsx'
 import { useEraResult } from '../../hooks/useEraResult.js'
 import { apiPostForm } from '../../api/client.js'
@@ -9,21 +7,18 @@ import { getSelectionId } from '../../api/session.js'
 import './PeriodPage1976.css'
 
 const ERA = '1976'
+const ERAS = ['1976', '2005', '2016', '2026']
 
 function PeriodPage1976() {
   const navigate = useNavigate()
   const location = useLocation()
   const selectionId = location.state?.selectionId ?? getSelectionId()
-  const [showBagInfo, setShowBagInfo] = useState(false)
-  const [showRegenModal, setShowRegenModal] = useState(false)
+
   const [regenerating, setRegenerating] = useState(false)
+  const [showRegenModal, setShowRegenModal] = useState(false)
   const [error, setError] = useState('')
 
   const { result, refetch } = useEraResult(selectionId, ERA)
-
-  const toggleBagInfo = () => {
-    setShowBagInfo((prev) => !prev)
-  }
 
   const handleRegenerate = async () => {
     setRegenerating(true)
@@ -51,19 +46,55 @@ function PeriodPage1976() {
     <div className="page-wrap">
       <div className="page">
         <header>
-          <div className="timeline" style={{ '--progress': 0 }}>
-            <div className="year active">1976</div>
-            <div className="year">2005</div>
-            <div className="year">2016</div>
-            <div className="year">2026</div>
+          <div className="line">
+            <div className="rule" />
+            <div className="era">
+              {ERAS.map((year) => (
+                <span key={year} className={`year ${year === ERA ? 'active' : ''}`}>
+                  {year === ERA && <span className="dot" />}
+                  {year}
+                </span>
+              ))}
+            </div>
           </div>
         </header>
 
         <section>
           <div
             className="imgPage"
-            style={result?.image_url ? { backgroundImage: `url(${result.image_url})` } : undefined}
-          />
+            style={
+              !regenerating && result?.image_url
+                ? { backgroundImage: `url(${result.image_url})` }
+                : undefined
+            }
+          >
+            {regenerating && (
+              <div className="loading-container">
+                <svg
+                  className="loadingSpinner"
+                  viewBox="0 0 100 100"
+                  aria-label="이미지 생성 중"
+                  role="status"
+                >
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    fill="none"
+                    stroke="#AC7D58"
+                    strokeWidth="9"
+                    strokeLinecap="round"
+                    pathLength="100"
+                    strokeDasharray="75 100"
+                  />
+                </svg>
+                <div className="loading-text">
+                  <p>장면을 준비하고 있어요.</p>
+                  <p>잠시만 기다려주세요.</p>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="content">
             <div>
@@ -76,53 +107,19 @@ function PeriodPage1976() {
               </div>
             </div>
 
-            <div
-              className="bagSearch"
-              onClick={toggleBagInfo}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') toggleBagInfo()
-              }}
-              aria-expanded={showBagInfo}
-            >
-              <img
-                className="Iimoji"
-                src={infoIcon}
-                alt=""
-                aria-hidden="true"
-              />
-              <div>가방 정보 더 알아보기</div>
-              <img
-                className={
-                  showBagInfo
-                    ? 'bagSearch-arrow bagSearch-arrow--open'
-                    : 'bagSearch-arrow'
-                }
-                src={downArrow}
-                alt=""
-                aria-hidden="true"
-              />
+            <div className="sceneIntro">
+              여행에서 시작된 MCM의 첫 장면을 만나보세요.
             </div>
-
-            {showBagInfo && (
-              <div className="bagInfoBox">
-                {/* TODO: 실제 가방 정보 텍스트로 교체 */}
-                가방정보!!
-              </div>
-            )}
 
             {error && <p className="period-error">{error}</p>}
 
             <div className="select">
-              <button
-                type="button"
-                onClick={handleRegenerate}
-                disabled={!result?.can_regenerate || regenerating}
-              >
-                {regenerating ? '생성 중...' : '다시 생성'}
-              </button>
-              <button type="button" onClick={handleNextPeriod}>
+              {result?.can_regenerate && !regenerating && (
+                <button type="button" onClick={handleRegenerate}>
+                  다시 생성
+                </button>
+              )}
+              <button type="button" onClick={handleNextPeriod} disabled={regenerating}>
                 <div>다음 시대로</div>
                 <div>&#8250;</div>
               </button>

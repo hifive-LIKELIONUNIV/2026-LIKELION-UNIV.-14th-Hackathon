@@ -15,7 +15,8 @@
   font-family: "Pretendard", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  padding: 48px 40px 80px;
+  padding: 0 40px 80px;
+  padding-top: 1cqw;
   position: relative;
 }
 
@@ -29,9 +30,15 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #3a332c;
+  padding: 24px 0 18px;
+  border-bottom: 1px solid rgba(162, 98, 48, 0.35);
   margin-bottom: 34px;
+}
+.choose-header .time-portal-title,
+.choose-header h1,
+.choose-header div {
+  font-size: 25px !important;
+  line-height: 1.2;
 }
 
 .choose-back-btn {
@@ -104,18 +111,20 @@
   flex: 0 0 280px;
   max-width: 280px;
   scroll-snap-align: start;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
+  background: rgba(40, 36, 31, 1);
+  border: 1px solid rgba(78, 78, 78, 1);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding: 16px;
 }
 
 .choose-card-img {
   aspect-ratio: 1 / 1;
   width: 100%;
-  background: #e4e2df;
+  background: rgba(244, 244, 244, 1);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -164,7 +173,7 @@
 .choose-add-btn {
   width: 100%;
   margin-top: 4px;
-  background: var(--gold);
+  background: #b37648;
   color: #241a0e;
   border: none;
   border-radius: 6px;
@@ -198,7 +207,7 @@
   gap: 6px;
   margin-top: 36px;
   font-family: "Pretendard", system-ui, sans-serif;
-  color: var(--gold-light);
+  color: rgba(182, 117, 66, 1);
   font-size: 15px;
   cursor: pointer;
   width: fit-content;
@@ -243,15 +252,15 @@
 .choose-modal {
   position: relative;
   width: 100%;
-  max-width: 720px;
+  max-width: 860px;
   max-height: 90vh;
   overflow-y: auto;
-  background: #f2ede6;
+  background: rgba(255, 255, 255, 1);
   color: #241a0e;
-  border-radius: 10px;
+  border-radius: 16px;
   display: flex;
   gap: 28px;
-  padding: 28px;
+  padding: 40px 28px;
 }
 
 .choose-modal-close {
@@ -271,10 +280,10 @@
 }
 
 .choose-modal-img {
-  flex: 0 0 280px;
-  aspect-ratio: 1 / 1;
-  background: #e4e2df;
-  border-radius: 6px;
+  flex: 0 0 478px;
+  aspect-ratio: 478 / 361;
+  background: rgba(217, 217, 217, 0.5);
+  border-radius: 10px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -283,7 +292,7 @@
 .choose-modal-img img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 
@@ -363,7 +372,13 @@
     padding: 32px 20px 60px;
   }
   .choose-header {
+    padding: 20px 0 14px;
     flex-direction: column;
+  }
+  .choose-header .time-portal-title,
+  .choose-header h1,
+  .choose-header div {
+    font-size: 18px !important;
   }
   .choose-back-btn {
     position: static;
