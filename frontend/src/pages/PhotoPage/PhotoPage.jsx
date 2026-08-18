@@ -1,21 +1,33 @@
-import { useNavigate } from 'react-router-dom'
-import ringImage from '../../assets/images/빙글빙글 원.svg'
-import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
-import cameraIconYellow from '../../assets/images/사진 촬영_카메라 icon_황색.svg'
-import cameraIconWhite from '../../assets/images/사진 촬영_카메라 icon_흰색.svg'
-import infoIcon from '../../assets/images/가방정보설명 _info icon.svg'
-import './PhotoPage.css'
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import ringImage from '../../assets/images/빙글빙글 원.svg';
+import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg';
+import cameraIconYellow from '../../assets/images/사진 촬영_카메라 icon_황색.svg';
+import cameraIconWhite from '../../assets/images/사진 촬영_카메라 icon_흰색.svg';
+import infoIcon from '../../assets/images/가방정보설명 _info icon.svg';
+import { fetchCsrfToken, getCaptureStatus } from '../../api/captureApi';
+import './PhotoPage.css';
+
+const DEFAULT_SELECTION_ID = 12; // 임시 테스트용 ID
 
 function PhotoPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectionId = location.state?.id ?? DEFAULT_SELECTION_ID;
+
+  useEffect(() => {
+    // CSRF 쿠키 초기화 및 진입 상태 확인
+    fetchCsrfToken();
+    getCaptureStatus(selectionId).catch((err) => console.error(err));
+  }, [selectionId]);
 
   const handleBack = () => {
-    navigate(-1)
-  }
+    navigate(-1);
+  };
 
   const handleCapture = () => {
-    navigate('/photo-capture')
-  }
+    navigate('/photo-capture', { state: { id: selectionId } });
+  };
 
   return (
     <>
@@ -35,7 +47,7 @@ function PhotoPage() {
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') handleBack()
+            if (e.key === 'Enter' || e.key === ' ') handleBack();
           }}
         >
           <img src={arrowImage} className="arrow" alt="" />
@@ -46,6 +58,7 @@ function PhotoPage() {
       <section>
         <div className="title">얼굴을 인식해주세요</div>
         <p className="subtitle">카메라에 얼굴을 정면으로 비춰주세요.</p>
+        <p className="subtitle2">정면을 바라보고 얼굴을 화면 중앙에 맞춰주세요.</p>
 
         <div className="capture-frame">
           <span className="corner tl" />
@@ -81,7 +94,7 @@ function PhotoPage() {
         </button>
       </section>
     </>
-  )
+  );
 }
 
-export default PhotoPage
+export default PhotoPage;

@@ -165,6 +165,7 @@ section {
     border-color 0.2s ease,
     transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
+  border-color: rgba(78, 78, 78, 1);
 }
 
 .photo-frame:active {
@@ -172,7 +173,7 @@ section {
 }
 
 .photo-frame.selected {
-  border-color: var(--accent-bright);
+  border-color: rgba(162, 98, 48, 1);
 }
 
 .captured-photo,

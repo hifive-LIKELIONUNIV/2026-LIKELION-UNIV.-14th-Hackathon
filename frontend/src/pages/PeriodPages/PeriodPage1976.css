@@ -1,243 +1,251 @@
 .page-wrap {
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    text-align: left;
-    background-color: #14100d;
-    color: #f5f0ea;
-    font-family: "Pretendard", system-ui, sans-serif;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  text-align: left;
+  background-color: #14100d;
+  color: #f5f0ea;
+  font-family: "Pretendard", system-ui, sans-serif;
 }
 
 .page {
-    width: 100%;
-    max-width: 1200px;
-    padding: clamp(24px, 4vw, 56px) clamp(20px, 5vw, 64px);
+  width: 100%;
+  max-width: 1200px;
+  padding: clamp(24px, 4vw, 56px) clamp(20px, 5vw, 64px);
 }
 
 html {
-    /* base font-size scales gently with viewport, clamped */
-    font-size: clamp(14px, 0.9vw + 8px, 18px);
+  font-size: clamp(14px, 0.9vw + 8px, 18px);
 }
-
-/* ---------- Header ---------- */
 
 .page-wrap header {
-    position: static;
-    padding: 0;
-    margin-bottom: clamp(40px, 6vw, 84px);
+  position: static;
+  padding: 0;
+  margin-bottom: clamp(40px, 6vw, 84px);
 }
 
-.timeline {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+.line {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
 }
 
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -10px;
-    height: 1px;
-    background-color: #614833;
+.rule {
+  width: 100%;
+  height: 1px;
+  background-color: #614833;
 }
 
-.timeline::after {
-    content: "";
-    position: absolute;
-    left: calc(var(--progress, 0) * 100%);
-    top: -14.5px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #c17a4f;
-    box-shadow: 0 0 6px 1px rgba(162, 98, 48, 0.7);
-    transform: translateX(calc(var(--progress, 0) * -10px));
-    transition: left 0.3s ease;
+.era {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
 }
 
-.timeline .year {
-    font-size: 1.15rem;
-    color: #6b6259;
-    font-weight: 500;
-    cursor: pointer;
+.year {
+  font-size: 1.15rem;
+  color: #6b6259;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
 }
 
-.timeline .year.active {
-    color: #f5f0ea;
-    font-weight: 700;
+.year.active {
+  color: #f5f0ea;
+  font-weight: 700;
 }
 
-/* ---------- Main section ---------- */
+.dot {
+  position: absolute;
+  top: -9.5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #c17a4f;
+  box-shadow: 0 0 6px 1px rgba(162, 98, 48, 0.7);
+  transform: translate(-50%, -50%);
+}
 
 .page-wrap section {
-    display: flex;
-    flex-direction: row;
-    gap: clamp(40px, 6vw, 88px);
-    align-items: stretch;
-    justify-content: flex-start;
-    text-align: left;
-    padding: 0;
+  display: flex;
+  flex-direction: row;
+  gap: clamp(40px, 6vw, 88px);
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 0;
 }
 
 .imgPage {
-    width: clamp(280px, 34vw, 460px);
-    aspect-ratio: 3 / 4;
-    flex-shrink: 0;
-    border: 1px solid #7a4f30;
-    border-radius: 24px;
-    background-color: #1c1712;
-    background-size: cover;
-    background-position: center;
+  width: clamp(280px, 34vw, 460px);
+  aspect-ratio: 3 / 4;
+  flex-shrink: 0;
+  border: 1px solid #7a4f30;
+  border-radius: 24px;
+  background-color: #1c1712;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* .loadingSpinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  transform-origin: 50% 50%;
+  animation: spin 1s linear infinite;
+} */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding-top: 8px;
-    min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+  min-width: 0;
 }
 
 .contentTitle {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(1.9rem, 2.4vw + 1rem, 2.8rem);
-    font-weight: 700;
-    line-height: 1.25;
-    color: #d99a6c;
-    margin-bottom: 24px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.9rem, 2.4vw + 1rem, 2.8rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: rgba(172, 125, 88, 1);
+  margin-bottom: 24px;
 }
 
 .contentMiniTitle {
-    font-size: clamp(1.15rem, 0.6vw + 1rem, 1.5rem);
-    font-weight: 500;
-    color: #f5f0ea;
-    margin-bottom: 18px;
+  font-size: clamp(1.15rem, 0.6vw + 1rem, 1.5rem);
+  font-weight: 500;
+  color: #f5f0ea;
+  margin-bottom: 18px;
 }
 
 .contentTxt {
-    font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
-    line-height: 1.85;
-    color: #fff;
-    max-width: 34em;
-    font-weight: 300;
+  font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
+  line-height: 1.85;
+  color: #fff;
+  max-width: 34em;
+  font-weight: 300;
 }
 
-/* ---------- 가방 정보 더 알아보기 (아코디언) ---------- */
-
-.bagSearch {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 40px;
-    color: #8E8E8E;
-    font-size: 1rem;
-    cursor: pointer;
-    width: fit-content;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.Iimoji {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
-    display: block;
-}
-
-.bagSearch-arrow {
-    width: 10px;
-    height: auto;
-    flex-shrink: 0;
-    display: block;
-    transition: transform 0.2s ease;
-}
-
-.bagSearch-arrow--open {
-    transform: rotate(180deg);
-}
-
-.bagInfoBox {
-    margin-top: 16px;
-    max-width: 34em;
-    padding: 18px 20px;
-    border-radius: 12px;
-    background-color: #201a15;
-    border: 1px solid #3a332c;
-    color: #a89a8c;
-    font-size: 0.9rem;
-    line-height: 1.7;
-    text-align: left;
+.sceneIntro {
+  margin-top: 40px;
+  max-width: 34em;
+  color: rgba(172, 125, 88, 1);
+  font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
+  font-weight: 500;
+  line-height: 1.6;
 }
 
 .select {
-    display: flex;
-    gap: 18px;
-    margin-top: auto;
-    padding-top: 48px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 48px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .select button {
-    border: none;
-    border-radius: 10px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    padding: 14px 60px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 14px 60px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .select button:first-child {
-    background-color: #2b2620;
-    color: #f5f0ea;
+  background-color: #2b2620;
+  color: #f5f0ea;
 }
 
 .select button:last-child {
-    background: #A26230;
-    color: #fff;
+  background: #a26230;
+  color: #fff;
 }
 
 .select button:last-child div:last-child {
-    font-weight: 700;
+  font-weight: 700;
 }
 
-/* ---------- Responsive (mobile, 660px 기준) ---------- */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  /* 스피너와 텍스트 사이의 여백을 넉넉하게 배치 */
+  gap: 36px;
+}
+
+.loadingSpinner {
+  width: 60px;
+  height: 60px;
+  transform-origin: 50% 50%;
+  animation: spin 1s linear infinite;
+  /* flex 자식 요소로서 고정 크기 유지 */
+  flex-shrink: 0;
+}
+
+.loading-text {
+  color: rgba(142, 142, 142, 1);
+  font-size: 15px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.6;
+  letter-spacing: -0.02em;
+}
+
+.loading-text p {
+  margin: 0;
+}
 
 @media (max-width: 660px) {
-    .page-wrap section {
-        flex-direction: column;
-        align-items: center;
-    }
+  .page-wrap section {
+    flex-direction: column;
+    align-items: center;
+  }
 
-    .imgPage {
-        width: min(100%, 420px);
-        aspect-ratio: 4 / 5;
-    }
+  .imgPage {
+    width: min(100%, 420px);
+    aspect-ratio: 4 / 5;
+  }
 
-    .content {
-        width: 100%;
-    }
+  .content {
+    width: 100%;
+  }
 
-    .contentTxt {
-        max-width: none;
-    }
+  .contentTxt {
+    max-width: none;
+  }
 
-    .bagInfoBox {
-        max-width: none;
-    }
+  .sceneIntro {
+    max-width: none;
+  }
 
-    .select {
-        width: 100%;
-    }
+  .select {
+    width: 100%;
+  }
 
-    .select button {
-        flex: 1;
-        justify-content: center;
-    }
+  .select button {
+    flex: 1;
+    justify-content: center;
+  }
 }

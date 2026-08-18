@@ -140,7 +140,14 @@ section {
   margin-bottom: 28px;
   letter-spacing: -0.1px;
 }
-
+.subtitle2{
+  font-size: 14px;
+  font-weight: 200;
+  color: #fff;
+  margin-top: -22px;
+  margin-bottom: 28px;
+  letter-spacing: -0.1px;
+}
 .capture-frame {
   position: relative;
   width: 310px;
@@ -192,6 +199,37 @@ section {
   font-weight: 700;
   color: #fff;
   line-height: 1;
+}
+
+/* ---------- 촬영 사이 딜레이(resting) 화면 ---------- */
+.camera-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  width: 48px;
+}
+
+.camera-icon {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.camera-lens {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 21px;
+  height: 21px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 3.4px solid #a26230;
+}
+
+.camera-status {
+  font-size: 14px;
+  color: #8e8e8e;
+  letter-spacing: 0.2px;
+  line-height: 1.5;
 }
 
 .shot-counter {
@@ -250,7 +288,9 @@ section {
     display: block;
     margin-top: 0;
   }
-
+  .subtitle2{
+    display: none;
+  }
   .capture-frame {
     width: 100%;
     max-width: 360px;

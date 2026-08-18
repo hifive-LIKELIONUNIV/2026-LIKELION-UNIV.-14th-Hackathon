@@ -28,47 +28,47 @@ html {
     margin-bottom: clamp(40px, 6vw, 84px);
 }
 
-.timeline {
+.line {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
+    flex-direction: column;
+    gap: 9px;
 }
 
-.timeline::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: -10px;
+.rule {
+    width: 100%;
     height: 1px;
     background-color: #614833;
 }
 
-.timeline::after {
-    content: "";
+.era {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.year {
+    font-size: 1.15rem;
+    color: #6b6259;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+}
+
+.year.active {
+    color: #f5f0ea;
+    font-weight: 700;
+}
+
+.dot {
     position: absolute;
-    left: calc(var(--progress, 0) * 100%);
-    top: -14.5px;
+    top: -9.5px;
+    left: 50%;
     width: 10px;
     height: 10px;
     border-radius: 50%;
     background-color: #c17a4f;
     box-shadow: 0 0 6px 1px rgba(162, 98, 48, 0.7);
-    transform: translateX(calc(var(--progress, 0) * -10px));
-    transition: left 0.3s ease;
-}
-
-.timeline .year {
-    font-size: 1.15rem;
-    color: #6b6259;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.timeline .year.active {
-    color: #f5f0ea;
-    font-weight: 700;
+    transform: translate(-50%, -50%);
 }
 
 /* ---------- Main section ---------- */
@@ -131,6 +131,17 @@ html {
     font-weight: 300;
 }
 
+/* ---------- 장면 소개 문구 ---------- */
+
+.sceneIntro {
+    margin-top: 40px;
+    max-width: 34em;
+    color: #d99a6c;
+    font-size: clamp(0.95rem, 0.3vw + 0.85rem, 1.15rem);
+    font-weight: 500;
+    line-height: 1.6;
+}
+
 /* ---------- 카메라 촬영 UI (imgPage 내부) ---------- */
 
 .camera-icon-wrap {
@@ -160,6 +171,97 @@ html {
     font-size: 14px;
     color: #8E8E8E;
     letter-spacing: 0.2px;
+}
+
+/* ---------- 카운트다운 / 촬영 완료 상태 ---------- */
+
+.imgPage__countdown {
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-weight: 700;
+    color: #f5f0ea;
+    line-height: 1;
+}
+
+.imgPage--captured {
+    background-color: #dcdcdc;
+}
+
+.imgPage--captured .camera-status {
+    color: #6b6259;
+}
+
+/* ---------- 촬영하기 / 다시 촬영 버튼 영역 ---------- */
+
+.captureRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.captureRow .captureCta {
+    margin-top: 0;
+}
+
+.captureCta:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.captureCta:disabled:hover {
+    background: #A26230;
+}
+
+.retakeCta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 28px;
+    background: #3a332b;
+    color: #f5f0ea;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.2s ease, transform 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.retakeCta:hover {
+    background: #4a4238;
+}
+
+.retakeCta:active {
+    transform: scale(0.97);
+}
+
+/* ---------- 다음 단계로 ---------- */
+
+.nextStepLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-end;
+    margin-top: auto;
+    padding-top: 24px;
+    border: none;
+    background: none;
+    color: #c17a4f;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nextStepLink:hover {
+    color: #d99a6c;
+}
+
+.nextStepLink__arrow {
+    font-size: 1.2rem;
+    line-height: 1;
 }
 
 /* ---------- 촬영하기 버튼 ---------- */
@@ -203,11 +305,15 @@ html {
     display: block;
 }
 
-.camera-lens-sm {
-    width: 9px;
+.captureCta-lens {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
     height: 9px;
-    border-width: 1.9px;
-    border-color: #ffffff;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1.9px solid #ffffff;
 }
 
 /* ---------- Responsive (mobile, 660px 기준) ---------- */
@@ -231,7 +337,18 @@ html {
         max-width: none;
     }
 
-    .captureCta {
+    .sceneIntro {
+        max-width: none;
+    }
+
+    .captureRow {
         width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .captureCta,
+    .retakeCta {
+        flex: 1;
+        width: auto;
     }
 }
