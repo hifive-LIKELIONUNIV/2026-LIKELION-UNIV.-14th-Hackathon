@@ -45,7 +45,12 @@
   padding: 14.4444cqw 0;
   box-sizing: border-box;
 }
-
+.loading-page__content .orbit-ring {
+  width: 46cqw;
+  height: 46cqw;
+  margin-bottom: -10cqw;
+  /* margin-bottom: -4cqw; */
+}
 .loading-page__year {
   margin: 0 0 4.4444cqw;
   color: #a26230;

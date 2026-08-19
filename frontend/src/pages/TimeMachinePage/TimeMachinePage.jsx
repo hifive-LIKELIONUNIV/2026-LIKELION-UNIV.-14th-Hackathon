@@ -39,10 +39,15 @@ function TimeMachinePage() {
 
   const selectedBag = location.state?.bag ?? BAGS[0]
 
+  // 주소 끝에 ?debug=1 을 붙이면 자동 이동을 멈춰서 디자인 작업할 때 편하게 볼 수 있음.
+  // 예: http://localhost:5173/time-machine?debug=1
+  const isDebugPaused = new URLSearchParams(location.search).get('debug') === '1'
+
   useEffect(() => {
+    if (isDebugPaused) return undefined
     const timer = setTimeout(() => navigate('/photo', { state: location.state }), 3000)
     return () => clearTimeout(timer)
-  }, [navigate, location.state])
+  }, [navigate, location.state, isDebugPaused])
 
   return (
     <div className="tm-page">
