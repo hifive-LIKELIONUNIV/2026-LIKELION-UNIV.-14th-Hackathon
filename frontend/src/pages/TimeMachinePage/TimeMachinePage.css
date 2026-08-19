@@ -1,0 +1,304 @@
+.tm-page {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 45%, #211a14 0%, #0d0a08 72%);
+}
+
+.tm-page__bg-clock {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  z-index: 0;
+  filter: invert(1) brightness(1.6);
+  mix-blend-mode: screen;
+  opacity: 0.6;
+}
+
+.tm-page__stage {
+  position: relative;
+  width: min(100%, calc(100svh * 1440 / 1024));
+  aspect-ratio: 1440 / 1024;
+  overflow: hidden;
+  container-type: size;
+}
+
+.tm-page__glow {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tm-page__glow--center {
+  top: 24.5833cqw;
+  left: 36.0417cqw;
+  width: 41.6042cqw;
+  height: 30.4861cqw;
+}
+
+.tm-page__side-glow {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tm-page__side-glow--left {
+  top: 28.6133vh;
+  left: 0;
+  width: 17.0139vw;
+  height: 42.8711vh;
+}
+
+.tm-page__side-glow--right {
+  top: 0;
+  right: 0;
+  width: 32.2917vw;
+  height: 25.6836vh;
+}
+
+.tm-page__side-glow--bottom-right {
+  bottom: 0;
+  right: 0;
+  width: 32.2917vw;
+  height: 25.6836vh;
+}
+
+.tm-page__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 14.0972cqw 1.6667cqw 15.9722cqw;
+  box-sizing: border-box;
+}
+
+.tm-page__title {
+  margin: 0 0 0.8333cqw;
+  color: #fff;
+  text-align: center;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 2.2222cqw;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.tm-page__subtitle {
+  margin: 0 0 5.8333cqw;
+  color: #b8afa4;
+  text-align: center;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.6667cqw;
+  font-weight: 400;
+}
+
+.tm-postcard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2.7778cqw;
+  width: 56.0417cqw;
+  height: 27.6389cqw;
+  box-sizing: border-box;
+  padding: 2.2222cqw;
+  border: 1.5px solid #a26230;
+  border-radius: 1.6667cqw;
+  background: #1a1511;
+  box-shadow: 0 1.3889cqw 2.7778cqw rgba(0, 0, 0, 0.35);
+}
+
+.tm-postcard::before {
+  content: '';
+  position: absolute;
+  inset: 0.2083cqw;
+  border: 1px solid rgba(162, 98, 48, 0.55);
+  border-radius: 1.5278cqw;
+  pointer-events: none;
+}
+
+.tm-postcard__frame {
+  position: relative;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 15.9722cqw;
+  box-sizing: border-box;
+  padding: 0.8333cqw;
+  border-radius: 0.4167cqw;
+  background: #262019;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tm-postcard__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid #a26230;
+  border-radius: 0.4167cqw;
+  filter: url(#tm-wavy-border);
+  pointer-events: none;
+}
+
+.tm-postcard__frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.tm-postcard__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 1.1111cqw;
+}
+
+.tm-postcard__eyebrow {
+  margin: 0 0 0.5556cqw;
+  color: #a26230;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.0417cqw;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tm-postcard__name {
+  margin: 0 0 0.6944cqw;
+  color: #c9975c;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 1.9444cqw;
+  font-weight: 700;
+}
+
+.tm-postcard__desc {
+  margin: 0;
+  color: #b8afa4;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.0417cqw;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.tm-postcard__years {
+  display: flex;
+  align-items: center;
+  gap: 0.8333cqw;
+  margin-top: 1.6667cqw;
+  color: #ede4d3;
+  font-family: "Pretendard", system-ui, sans-serif;
+  font-size: 1.1111cqw;
+  font-weight: 600;
+}
+
+.tm-postcard__line {
+  flex: 1 1 auto;
+  height: 0;
+  border-top: 1px dashed rgba(237, 228, 211, 0.35);
+}
+
+.tm-postcard__plane {
+  width: 1.3889cqw;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.tm-postcard__stamp {
+  position: absolute;
+  top: -1.3889cqw;
+  right: -1.6667cqw;
+  width: 15.2778cqw;
+  height: auto;
+  object-fit: contain;
+  transform: rotate(16deg);
+  transform-origin: center;
+}
+
+@media (max-width: 660px) {
+  .tm-page__stage {
+    width: 100%;
+    height: 100svh;
+    aspect-ratio: auto;
+  }
+
+  .tm-page__content {
+    padding: 24px 20px;
+  }
+
+  .tm-page__title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .tm-page__subtitle {
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .tm-postcard {
+    width: 100%;
+    height: auto;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .tm-postcard::before {
+    inset: 3px;
+    border-radius: 14px;
+  }
+
+  .tm-postcard__frame {
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .tm-postcard__body {
+    padding-top: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  .tm-postcard__eyebrow {
+    font-size: 13px;
+  }
+
+  .tm-postcard__name {
+    font-size: 22px;
+  }
+
+  .tm-postcard__desc {
+    font-size: 13px;
+  }
+
+  .tm-postcard__years {
+    font-size: 14px;
+    margin-top: 16px;
+  }
+
+  .tm-postcard__plane {
+    width: 18px;
+  }
+
+  .tm-postcard__stamp {
+    top: -14px;
+    right: -18px;
+    width: 110px;
+    height: auto;
+    transform: rotate(16deg);
+  }
+}

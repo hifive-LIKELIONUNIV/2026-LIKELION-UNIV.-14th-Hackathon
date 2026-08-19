@@ -1,0 +1,40 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import TimePortalTitle from "../../components/TimePortalTitle/TimePortalTitle.jsx";
+import "./LoginProcessingPage.css";
+
+function LoginProcessingPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => navigate("/bags"), 3000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  return (
+    <div className="processing-page">
+      <div className="processing-page__stage">
+        <div className="processing-page__content">
+          <TimePortalTitle className="processing-page__title" />
+
+          <div className="processing-page__ring-wrap">
+            <div className="processing-page__ring-spin" aria-hidden="true" />
+            <span className="processing-page__ring-label">PROCESSING</span>
+          </div>
+
+          <p className="processing-page__message">
+            장바구니에 담은
+            <br />
+            가방 정보를 불러오고 있어요
+          </p>
+
+          <span className="processing-page__divider" aria-hidden="true" />
+
+          <p className="processing-page__caption">잠시만 기다려주세요.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default LoginProcessingPage;

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ era_meta.label }} 촬영</title>
+</head>
+<body>
+    <h1>지금의 나를 촬영해주세요</h1>
+    <p>{{ era_meta.description }}</p>
+
+    <!-- 카메라 권한/로딩 대기 화면 -->
+    <div id="idle-screen">
+        <div style="width:300px; height:400px; border:1px solid #444; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <p>📷</p>
+            <p>카메라 활성화 중</p>
+        </div>
+
+        <!-- 카메라 권한/접근 실패 시 여기로 전환 (기본 숨김) -->
+        <div id="camera-error-box" style="display:none;">
+            <p>카메라를 사용할 수 없어요. 카메라 권한을 확인한 뒤 다시 시도해주세요.</p>
+            <button id="camera-retry-btn" type="button">다시 시도</button>
+        </div>
+    </div>
+
+    <!-- 카메라 화면 -->
+    <div id="camera-screen" style="display:none;">
+        <div style="position:relative; width:300px; height:400px;">
+            <video id="video" width="600" height="800" autoplay
+                   style="width:300px; height:400px; object-fit:cover; transform: scaleX(-1);"></video>
+            <div id="countdown"
+                 style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); color:#fff; font-size:80px; align-items:center; justify-content:center;"></div>
+        </div>
+        <!-- 저장 실패 시 여기로 전환 (기본 숨김) -->
+        <p id="save-error-text" style="display:none; color:#c0392b;">사진 저장에 실패했어요. 다시 촬영해주세요.</p>
+        <button id="start-btn" style="display:none;">촬영하기</button>
+    </div>
+
+    <canvas id="canvas" width="600" height="800" style="display:none;"></canvas>
+
+    <script>
+        const idleScreen = document.getElementById('idle-screen');
+        const cameraScreen = document.getElementById('camera-screen');
+        const startBtn = document.getElementById('start-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const countdownEl = document.getElementById('countdown');
+        const cameraErrorBox = document.getElementById('camera-error-box');
+        const cameraRetryBtn = document.getElementById('camera-retry-btn');
+        const saveErrorText = document.getElementById('save-error-text');
+
+        const selectionId = {{ selection.id }};
+        let stream = null;
+        let countdownTimer = null;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function initCamera() {
+            cameraErrorBox.style.display = 'none';
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 600 },
+                    height: { ideal: 800 }
+                }
+            })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                    idleScreen.style.display = 'none';
+                    cameraScreen.style.display = 'block';
+                    startBtn.style.display = 'inline-block';
+                })
+                .catch(err => {
+                    console.error('[initCamera] 웹캠 접근 실패:', err);
+                    cameraErrorBox.style.display = 'block';
+                });
+        }
+
+        cameraRetryBtn.addEventListener('click', initCamera);
+
+        startBtn.addEventListener('click', () => {
+            saveErrorText.style.display = 'none';
+            startBtn.style.display = 'none';
+            startCountdown();
+        });
+
+        function startCountdown() {
+            let count = 5;
+            countdownEl.style.display = 'flex';
+            countdownEl.textContent = count;
+
+            countdownTimer = setInterval(() => {
+                count -= 1;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                } else {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                    countdownEl.style.display = 'none';
+                    capturePhoto();
+                }
+            }, 1000);
+        }
+
+        // 웹캠 원본 해상도는 보통 16:9라서, 3:4 캔버스에 그냥 늘려 그리면 세로로 찌그러짐.
+        // object-fit:cover처럼 실제 비디오에서 3:4 영역만 크롭해서 그림.
+        function capturePhoto() {
+            const ctx = canvas.getContext('2d');
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const targetRatio = canvas.width / canvas.height; // 3:4 = 0.75
+            const videoRatio = vw / vh;
+
+            let sx, sy, sw, sh;
+            if (videoRatio > targetRatio) {
+                sh = vh;
+                sw = vh * targetRatio;
+                sx = (vw - sw) / 2;
+                sy = 0;
+            } else {
+                sw = vw;
+                sh = vw / targetRatio;
+                sx = 0;
+                sy = (vh - sh) / 2;
+            }
+
+            // 미리보기가 좌우반전(셀카 모드)이라, 저장되는 사진도 똑같이 좌우반전해서
+            // 보였던 모습 그대로 캡처되게 함
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            const imageData = canvas.toDataURL('image/png');
+
+            const formData = new FormData();
+            formData.append('image_data', imageData);
+
+            fetch(`/shop/capture/${selectionId}/era/2026/capture/save/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: formData,
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('[capturePhoto] 저장 실패:', data.error);
+                    saveErrorText.style.display = 'block';
+                    startBtn.style.display = 'inline-block';
+                    return;
+                }
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                window.location.href = data.redirect;
+            })
+            .catch(err => {
+                console.error('[capturePhoto] 요청 오류:', err);
+                saveErrorText.style.display = 'block';
+                startBtn.style.display = 'inline-block';
+            });
+        }
+
+        initCamera();
+    </script>
+</body>
+</html>

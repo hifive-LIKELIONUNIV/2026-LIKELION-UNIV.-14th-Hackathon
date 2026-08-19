@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>얼굴 촬영</title>
+</head>
+<body>
+    <button id="back-btn">이전</button>
+
+    <!-- 1단계: 카메라 권한/로딩 대기 화면 -->
+    <div id="idle-screen">
+        <h1>얼굴을 인식해주세요</h1>
+        <div style="width:300px; height:400px; border:1px solid #444; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <p>📷</p>
+            <p>카메라 활성화 중</p>
+        </div>
+        <p>촬영된 얼굴 이미지는 TIME PORTAL 체험 이미지 생성에만 사용됩니다.</p>
+
+        <!-- 카메라 권한/접근 실패 시 여기로 전환 (기본 숨김) -->
+        <div id="camera-error-box" style="display:none;">
+            <p>카메라를 사용할 수 없어요. 카메라 권한을 확인한 뒤 다시 시도해주세요.</p>
+            <button id="camera-retry-btn" type="button">다시 시도</button>
+        </div>
+    </div>
+
+    <!-- 2단계: 카메라 화면. 권한 허용되면 자동으로 표시되고,
+         첫 촬영만 '촬영하기' 버튼으로 시작하며, 두 번째 촬영은 버튼 없이
+         3초 간격을 둔 뒤 자동으로 이어서 진행됨 -->
+    <div id="camera-screen" style="display:none;">
+        <h1>얼굴을 인식해주세요.</h1>
+        <div style="position:relative; width:300px; height:400px;">
+            <video id="video" width="600" height="800" autoplay
+                   style="width:300px; height:400px; object-fit:cover; transform: scaleX(-1);"></video>
+            <div id="countdown"
+                 style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); color:#fff; font-size:80px; align-items:center; justify-content:center;"></div>
+        </div>
+        <p id="progress">0 / 2</p>
+        <p id="status-text">촬영 가능 횟수</p>
+        <!-- 저장 실패 시 여기로 전환 (기본 숨김) -->
+        <p id="save-error-text" style="display:none; color:#c0392b;">사진 저장에 실패했어요. 다시 촬영해주세요.</p>
+        <button id="start-btn" style="display:none;">촬영하기</button>
+    </div>
+
+    <canvas id="canvas" width="600" height="800" style="display:none;"></canvas>
+
+    <script>
+        const idleScreen = document.getElementById('idle-screen');
+        const cameraScreen = document.getElementById('camera-screen');
+        const startBtn = document.getElementById('start-btn');
+        const backBtn = document.getElementById('back-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const countdownEl = document.getElementById('countdown');
+        const progress = document.getElementById('progress');
+        const statusText = document.getElementById('status-text');
+        const cameraErrorBox = document.getElementById('camera-error-box');
+        const cameraRetryBtn = document.getElementById('camera-retry-btn');
+        const saveErrorText = document.getElementById('save-error-text');
+
+        const selectionId = {{ selection.id }};
+        let photoCount = {{ photo_count }};
+        let stream = null;
+        let countdownTimer = null;
+        let nextShotTimer = null;
+        let inCameraStep = false;
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        backBtn.addEventListener('click', () => {
+            stopCameraAndTimers();
+            window.history.back();
+        });
+
+        function stopCameraAndTimers() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+            if (nextShotTimer) {
+                clearTimeout(nextShotTimer);
+                nextShotTimer = null;
+            }
+            countdownEl.style.display = 'none';
+        }
+
+        // 페이지 진입 시 바로 카메라 권한 요청 + 미리보기 시작
+        // (아직 촬영은 시작하지 않음 — '촬영하기' 버튼을 눌러야 카운트다운이 시작됨)
+        function initCamera() {
+            cameraErrorBox.style.display = 'none';
+            navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 600 },
+                    height: { ideal: 800 }
+                }
+            })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                    idleScreen.style.display = 'none';
+                    cameraScreen.style.display = 'block';
+                    inCameraStep = true;
+                    showStartButton();
+                })
+                .catch(err => {
+                    console.error('[initCamera] 웹캠 접근 실패:', err);
+                    cameraErrorBox.style.display = 'block';
+                });
+        }
+
+        cameraRetryBtn.addEventListener('click', initCamera);
+
+        function showStartButton() {
+            statusText.textContent = '촬영 가능 횟수';
+            startBtn.style.display = 'inline-block';
+        }
+
+        // '촬영하기' 클릭 -> 카운트다운 시작 (1번째 촬영만 이 버튼을 거침, 2번째는 자동 이어짐)
+        startBtn.addEventListener('click', () => {
+            saveErrorText.style.display = 'none';
+            startBtn.style.display = 'none';
+            startCountdown();
+        });
+
+        // 카운트다운 후 자동 캡처
+        function startCountdown() {
+            let count = 5;
+            countdownEl.style.display = 'flex';
+            countdownEl.textContent = count;
+
+            countdownTimer = setInterval(() => {
+                count -= 1;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                } else {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                    countdownEl.style.display = 'none';
+                    capturePhoto();
+                }
+            }, 1000);
+        }
+
+        // 실제 캡처 + 서버 전송
+        // 웹캠 원본 해상도는 보통 16:9라서, 3:4 캔버스에 그냥 늘려 그리면 세로로 찌그러짐.
+        // object-fit:cover처럼 실제 비디오에서 3:4 영역만 크롭해서 그림.
+        function capturePhoto() {
+            const ctx = canvas.getContext('2d');
+            const vw = video.videoWidth;
+            const vh = video.videoHeight;
+            const targetRatio = canvas.width / canvas.height; // 3:4 = 0.75
+            const videoRatio = vw / vh;
+
+            let sx, sy, sw, sh;
+            if (videoRatio > targetRatio) {
+                // 비디오가 더 넓음 -> 좌우를 잘라냄
+                sh = vh;
+                sw = vh * targetRatio;
+                sx = (vw - sw) / 2;
+                sy = 0;
+            } else {
+                // 비디오가 더 좁음(세로로 김) -> 위아래를 잘라냄
+                sw = vw;
+                sh = vw / targetRatio;
+                sx = 0;
+                sy = (vh - sh) / 2;
+            }
+
+            // 미리보기가 좌우반전(셀카 모드)이라, 저장되는 사진도 똑같이 좌우반전해서
+            // 보였던 모습 그대로 캡처되게 함
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            const imageData = canvas.toDataURL('image/png');
+
+            const formData = new FormData();
+            formData.append('image_data', imageData);
+
+            fetch(`/shop/capture/${selectionId}/save/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+                body: formData,
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('[capturePhoto] 저장 실패:', data.error);
+                    saveErrorText.style.display = 'block';
+                    showStartButton(); // 실패했으면 다시 촬영할 수 있게 버튼 복구
+                    return;
+                }
+
+                photoCount = data.photo_count;
+                progress.textContent = `${photoCount} / 2`;
+
+                if (data.next_step === 'choose') {
+                    stopCameraAndTimers();
+                    inCameraStep = false;
+                    window.location.href = `/shop/capture/${selectionId}/choose/`;
+                } else {
+                    // 2번째 촬영은 버튼 없이, 3초 간격을 둔 뒤 바로 카운트다운 이어서 진행
+                    statusText.textContent = '잠시 후 다음 촬영이 시작됩니다...';
+                    nextShotTimer = setTimeout(() => {
+                        nextShotTimer = null;
+                        startCountdown();
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                console.error('[capturePhoto] 요청 오류:', err);
+                saveErrorText.style.display = 'block';
+                showStartButton();
+            });
+        }
+
+        initCamera();
+    </script>
+</body>
+</html>

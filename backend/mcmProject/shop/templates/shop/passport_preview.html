@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>TIME PASSPORT 다운로드</title>
+</head>
+<body>
+    <h1>TIME PASSPORT</h1>
+    <p>사진을 확인하고 다운로드해주세요</p>
+
+    <img src="{% url 'shop:passport_preview_image' selection.id %}"
+         alt="네컷 미리보기" style="width:100%; max-width:360px; display:block; border:1px solid #444;">
+
+    <p style="margin-top:20px;">
+        <a href="{% url 'shop:passport_download' selection.id %}">
+            <button type="button">다운로드</button>
+        </a>
+    </p>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>가방 선택</title>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+
+    <form method="post" action="{% url 'shop:select_bag' %}">
+        {% csrf_token %}
+
+        {% for product in products %}
+            <div>
+                <input type="radio" name="product_id" value="{{ product.id }}" id="product-{{ product.id }}" required>
+                <label for="product-{{ product.id }}">
+                    {{ product.name }}
+                </label>
+            </div>
+        {% empty %}
+            <p>상품이 없습니다.</p>
+        {% endfor %}
+
+        <button type="submit">다음 단계로</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }; \"done\")",
+      "Bash(rm -f /c/tmp/start-*.png /c/tmp/login-*.png /tmp/vite11.log 2>/dev/null; echo cleaned)",
+      "Bash(node checkcaption.mjs)",
+      "Bash(node checkbox.mjs)",
+      "Bash(node measure.mjs)",
+      "Bash(node checktitle.mjs)",
+      "Bash(node measure2.mjs)",
+      "Bash(node checkfont.mjs)",
+      "Bash(curl -s http://localhost:5173/src/pages/LoginProcessingPage/LoginProcessingPage.css)",
+      "Bash(node checkrect.mjs)",
+      "Bash(node measure3.mjs)",
+      "Bash(rm -f /c/tmp/proc-divider*.png /tmp/vite15.log 2>/dev/null; echo cleaned)",
+      "Bash(node checksel.mjs)",
+      "Bash(rm -f /c/tmp/bag-page*.png /tmp/vite16.log 2>/dev/null; echo cleaned)",
+      "Bash(node checkredirect.mjs)",
+      "Bash(node checkfooter.mjs)",
+      "Bash(node checkbtn2.mjs)",
+      "Bash(node checkresize.mjs)",
+      "Bash(node checkwide.mjs)",
+      "Bash(rm -f /c/tmp/final-*.png /tmp/vite29.log 2>/dev/null; echo cleaned)",
+      "Bash(rm -f /c/tmp/loading-p*.png /tmp/vite31.log 2>/dev/null; echo cleaned)",
+      "Bash(node check2005.mjs)"
+    ],
+    "additionalDirectories": [
+      "C:\\tmp"
+    ]
+  }
+}
