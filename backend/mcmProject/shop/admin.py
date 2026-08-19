@@ -4,9 +4,9 @@ from .models import Product, CartItem, PersonaSelection, PersonaResult, Captured
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'subtitle', 'is_default', 'created_at')
-    list_filter = ('is_default',)
-    search_fields = ('name',)
+    list_display = ('name', 'product_code', 'color', 'price', 'is_default', 'created_at')
+    list_filter = ('is_default', 'color')
+    search_fields = ('name', 'product_code')
     filter_horizontal = ('recommended_products',)
 
 

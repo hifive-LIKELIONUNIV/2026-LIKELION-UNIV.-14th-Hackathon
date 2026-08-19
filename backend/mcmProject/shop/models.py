@@ -1,13 +1,22 @@
 from django.db import models
 from django.conf import settings
 
+from django.db import models
+from django.conf import settings
+
+
 class Product(models.Model):
-    name = models.CharField(max_length=100)
-    subtitle = models.CharField(max_length=200, blank=True)
-    description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    name = models.CharField('제품명', max_length=100)
+    product_code = models.CharField('상품코드', max_length=50, unique=True)
+    detail_info = models.TextField('상세정보', blank=True)
+    feature = models.TextField('특성', blank=True)
+    description = models.TextField('설명', blank=True)
+    color = models.CharField('색깔', max_length=50, blank=True)
+    size = models.CharField('크기', max_length=100, blank=True)
+    image = models.ImageField('사진', upload_to='products/', blank=True, null=True)
+    price = models.DecimalField('가격', max_digits=10, decimal_places=2, null=True, blank=True)
+
     is_default = models.BooleanField(default=False)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     recommended_products = models.ManyToManyField(
