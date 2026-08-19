@@ -9,6 +9,7 @@ urlpatterns = [
 
     path('capture/<int:selection_id>/', api_views.capture_status, name='capture_status'),
     path('capture/<int:selection_id>/photos/', api_views.photos_list, name='photos_list'),
+    path('capture/<int:selection_id>/choose/', api_views.choose_photo_api, name='choose_photo_api'),
 
     path('capture/<int:selection_id>/era/<str:era>/result/', api_views.era_result_api, name='era_result_api'),
     path('capture/<int:selection_id>/era/<str:era>/regen-choice/', api_views.era_regen_choice_api, name='era_regen_choice_api'),

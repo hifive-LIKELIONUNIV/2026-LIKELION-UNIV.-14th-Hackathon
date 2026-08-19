@@ -4,15 +4,18 @@ from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 
-from .models import Product, PersonaSelection, PersonaResult
+from .models import Product, PersonaSelection, PersonaResult, CapturedPhoto
 from .constants import ERA_ORDER, next_era
-from .views import _get_or_create_result
+from .views import _get_or_create_result, _kick_off_era_generation
 
 # React SPA용 JSON 엔드포인트. HTML만 렌더링하던 기존 GET 뷰(select_bag, capture_photo,
 # choose_photo_page, era_result, era_regen_choose, recommend_products, passport_result)를
-# 대체하는 용도이고, 이미 JSON을 반환하는 POST 엔드포인트(save_photo, choose_photo,
-# era_generate, era_status, era_regenerate, era_regen_confirm, era_2026_capture_save,
-# add_to_cart)는 기존 shop/urls.py 경로를 그대로 재사용한다.
+# 대체하는 용도이고, 이미 JSON을 반환하는 POST 엔드포인트(save_photo, era_generate,
+# era_status, era_regenerate, era_regen_confirm, era_2026_capture_save, add_to_cart)는
+# 기존 shop/urls.py 경로를 그대로 재사용한다.
+#
+# 단, choose_photo(HTML 버전)는 JsonResponse가 아니라 실제 HTTP redirect(302)를 반환해서
+# fetch로 호출하면 React 입장에서 다루기 애매하므로, 여기 choose_photo_api로 별도 재작성함.
 
 
 def _product_dict(request, product):
@@ -72,6 +75,30 @@ def select_bag_api(request):
 def capture_status(request, selection_id):
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     return JsonResponse({'photo_count': selection.captured_photos.count()})
+
+
+@require_POST
+def choose_photo_api(request, selection_id):
+    """choose_photo(HTML, redirect 응답) POST와 동일한 로직 — 촬영된 2장 중 하나를 최종
+    선택으로 표시하고, 첫 두 시대(1976·2005) 이미지 생성을 백그라운드로 바로 시작한다."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
+
+    selection = get_object_or_404(PersonaSelection, id=selection_id)
+    photo_id = data.get('photo_id')
+    chosen_photo = get_object_or_404(CapturedPhoto, id=photo_id, selection=selection)
+
+    selection.captured_photos.update(is_chosen=False)
+    chosen_photo.is_chosen = True
+    chosen_photo.save()
+
+    for era in ERA_ORDER[:2]:
+        if era != '2026':
+            _kick_off_era_generation(selection, era)
+
+    return JsonResponse({'success': True, 'first_era': ERA_ORDER[0]})
 
 
 def photos_list(request, selection_id):
