@@ -56,10 +56,10 @@
   position: relative;
   width: 460px;
   max-width: 100%;
-  background: #9c6b45;
-  border-radius: 22px;
-  padding: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  background: rgba(188,116,74,1);
+  border-radius: 15px;
+  padding: 3px;
+  /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); */
 }
 
 .frame-inner {
@@ -86,7 +86,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 22px;
-  padding: 12px;
+  /* padding: 12px; */
 }
 
 .frame {
@@ -124,8 +124,8 @@
 
 .frame-footer-date {
   position: absolute;
-  right: 14px;
-  bottom: 4px;
+  right: -7px;
+  bottom: -15px;
   font-size: 9px;
   font-weight: 500;
   color: rgba(255, 214, 179, 0.55);
