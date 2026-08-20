@@ -38,9 +38,6 @@ function StartPage() {
               onClick={handleStart}
             >
               체험 시작하기
-              {/* <span className="start-page__cta-arrow" aria-hidden="true">
-                &#8250;
-              </span> */}
               <img
                 src={nextArrowIcon}
                 className="start-page__cta-arrow"
