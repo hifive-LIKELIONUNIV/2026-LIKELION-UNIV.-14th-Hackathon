@@ -109,16 +109,12 @@ function PhotoEndPage() {
           disabled={selectedIndex === null || submitting}
         >
           {submitting ? '선택 중...' : '선택한 사진으로 시간 여행 시작하기'}
-          {/* <span className="primary-btn-arrow" aria-hidden="true">
-            &#8250;
-          </span> */}
           <img
-                src={nextArrowIcon}
-                className="start-page__cta-arrow"
-                alt=""
-                aria-hidden="true"
-                width="8"
-              />
+            src={nextArrowIcon}
+            className="primary-btn-arrow"
+            alt=""
+            aria-hidden="true"
+          />
         </button>
       </section>
     </>

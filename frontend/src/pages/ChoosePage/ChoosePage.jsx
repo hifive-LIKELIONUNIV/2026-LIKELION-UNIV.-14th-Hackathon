@@ -7,6 +7,7 @@ import twillyImg from '../../assets/images/089a86449990c908a6f10a8b56c8ba71de52a
 import { apiGet, apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
+import nextArrowIcon from '../../assets/images/Vector.png'
 import './ChoosePage.css'
 
 const FALLBACK_IMAGES = [loaferImg, roundBagImg, bucketBagImg, twillyImg]
@@ -132,7 +133,15 @@ function ChoosePage() {
             if (e.key === 'Enter' || e.key === ' ') handleNext()
           }}
         >
-          다음 단계로 <span>&#8250;</span>
+          다음 단계로{' '}
+          <span
+            className="choose-next-step-arrow"
+            style={{
+              WebkitMaskImage: `url(${nextArrowIcon})`,
+              maskImage: `url(${nextArrowIcon})`,
+            }}
+            aria-hidden="true"
+          />
         </div>
       </div>
 
