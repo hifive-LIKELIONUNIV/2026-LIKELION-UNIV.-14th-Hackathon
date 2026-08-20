@@ -6,9 +6,19 @@ import bucketBagImg from '../../assets/images/e9f8dd3954b9cbfa638775efd8eb60b636
 import twillyImg from '../../assets/images/089a86449990c908a6f10a8b56c8ba71de52adc7.png'
 import { apiGet, apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
+import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import './ChoosePage.css'
 
 const FALLBACK_IMAGES = [loaferImg, roundBagImg, bucketBagImg, twillyImg]
+
+// TODO: 백엔드 DB에 실제 상품 데이터 들어오면 이 목업은 지우고
+// 아래 useEffect의 setProducts(data.products...) 결과만 쓰도록 되돌리기.
+const MOCK_PRODUCTS = [
+  { id: 'mock-1', name: '로퍼 상품', image: loaferImg },
+  { id: 'mock-2', name: '라운드백 상품', image: roundBagImg },
+  { id: 'mock-3', name: '버킷백 상품', image: bucketBagImg },
+  { id: 'mock-4', name: '트윌리 스카프', image: twillyImg },
+]
 
 function ChoosePage() {
   const navigate = useNavigate()
@@ -25,14 +35,23 @@ function ChoosePage() {
     if (!selectionId) return
     apiGet(`/api/shop/capture/${selectionId}/recommend/`)
       .then((data) => {
+        const list = data.products ?? []
+        if (list.length === 0) {
+          // TODO: DB에 실제 상품이 들어오면 이 분기 지우기
+          setProducts(MOCK_PRODUCTS)
+          return
+        }
         setProducts(
-          data.products.map((product, index) => ({
+          list.map((product, index) => ({
             ...product,
             image: product.image_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
           })),
         )
       })
-      .catch(() => {})
+      .catch(() => {
+        // TODO: DB에 실제 상품이 들어오면 이 분기 지우기
+        setProducts(MOCK_PRODUCTS)
+      })
   }, [selectionId])
 
   useEffect(() => {
@@ -40,10 +59,6 @@ function ChoosePage() {
     const timer = setTimeout(() => setToastVisible(false), 2000)
     return () => clearTimeout(timer)
   }, [toastVisible])
-
-  const handleBack = () => {
-    navigate(-1)
-  }
 
   const showToast = (message) => {
     setToastMessage(message)
@@ -75,77 +90,60 @@ function ChoosePage() {
 
   return (
     <div className="choose-page-wrap">
-      <div className="choose-header">
-        <button
-          type="button"
-          className="choose-back-btn"
-          onClick={handleBack}
+      <div className="choose-stage">
+        <div className="choose-header">
+          <TimePortalTitle className="choose-title" />
+        </div>
+
+        <h2 className="choose-heading">
+          함께한 가방과 잘 어울리거나 비슷한 상품들이에요
+        </h2>
+
+        <div className="choose-carousel">
+          <div className="choose-track">
+            {products.map((product) => {
+              const isAdded = addedIds.includes(product.id)
+              return (
+                <div className="choose-card" key={product.id}>
+                  <div className="choose-card-img">
+                    <img src={product.image} alt="상품 이미지" />
+                  </div>
+                  <div className="choose-card-body">
+                    <div className="choose-card-name">{product.name}</div>
+                    <button
+                      type="button"
+                      className="choose-card-link"
+                      onClick={() => handleShowDetail(product)}
+                    >
+                      자세히 보기
+                    </button>
+                    <button
+                      type="button"
+                      className={
+                        isAdded ? 'choose-add-btn is-added' : 'choose-add-btn'
+                      }
+                      onClick={() => handleAddToggle(product.id)}
+                    >
+                      {isAdded ? '담김' : '+ 장바구니 담기'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div
+          className="choose-next-step"
+          onClick={handleNext}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') handleNext()
+          }}
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          이전
-        </button>
-        <div className="choose-title">
-          TIME <span className="choose-portal">PORTAL</span>
+          다음 단계로 <span>&#8250;</span>
         </div>
-      </div>
-
-      <h2 className="choose-heading">
-        함께한 가방과 잘 어울리거나 비슷한 상품들이에요
-      </h2>
-
-      <div className="choose-carousel">
-        <div className="choose-track">
-          {products.map((product) => {
-            const isAdded = addedIds.includes(product.id)
-            return (
-              <div className="choose-card" key={product.id}>
-                <div className="choose-card-img">
-                  <img src={product.image} alt="상품 이미지" />
-                </div>
-                <div className="choose-card-body">
-                  <div className="choose-card-name">{product.name}</div>
-                  <button
-                    type="button"
-                    className="choose-card-link"
-                    onClick={() => handleShowDetail(product)}
-                  >
-                    자세히 보기
-                  </button>
-                  <button
-                    type="button"
-                    className={
-                      isAdded ? 'choose-add-btn is-added' : 'choose-add-btn'
-                    }
-                    onClick={() => handleAddToggle(product.id)}
-                  >
-                    {isAdded ? '담김' : '+ 장바구니 담기'}
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      <div
-        className="choose-next-step"
-        onClick={handleNext}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') handleNext()
-        }}
-      >
-        다음 단계로 <span>&#8250;</span>
       </div>
 
       <div className={toastVisible ? 'choose-toast is-visible' : 'choose-toast'}>

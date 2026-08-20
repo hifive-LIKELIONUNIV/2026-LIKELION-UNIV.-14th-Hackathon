@@ -6,7 +6,8 @@
   --text-main: #f2ede6;
   --text-sub: #b8afa4;
 
-  display: block;
+  display: flex;
+  justify-content: center;
   min-height: 100vh;
   width: 100%;
   box-sizing: border-box;
@@ -15,8 +16,6 @@
   font-family: "Pretendard", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  padding: 0 40px 80px;
-  padding-top: 1cqw;
   position: relative;
 }
 
@@ -25,50 +24,27 @@
   box-sizing: border-box;
 }
 
+/* BagSelectionPage_before와 같은 비율(1440:1024 기준 폭)로 제한된 무대.
+   저 페이지처럼 높이/스크롤을 고정하지 않고, 폭만 맞춰서 세로 스크롤은 그대로 유지함. */
+.choose-stage {
+  width: min(100%, calc(100vh * 1440 / 1024));
+  padding: 24px 40px 80px;
+}
+
 .choose-header {
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  padding: 24px 0 18px;
+  padding: 24px 0 40px;
   border-bottom: 1px solid rgba(162, 98, 48, 0.35);
   margin-bottom: 34px;
 }
-.choose-header .time-portal-title,
-.choose-header h1,
-.choose-header div {
-  font-size: 25px !important;
-  line-height: 1.2;
-}
 
-.choose-back-btn {
-  position: absolute;
-  left: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: #d7a15f;
-  font-family: "Pretendard", system-ui, sans-serif;
-  font-size: 16px;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-}
-.choose-back-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.choose-title {
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
-  font-size: 30px;
-  letter-spacing: 0.06em;
-  color: var(--text-main);
-}
-.choose-portal {
-  color: var(--gold);
+/* TimePortalTitle은 cqw 단위 기본값을 쓰는데, 이 페이지엔 컨테이너 쿼리 조상이
+   없어서 px로 고정 크기를 줘야 함. 다른 페이지(BagSelectionPage 등)와 같은 패턴. */
+.choose-header .time-portal-title.choose-title {
+  font-size: 25px;
 }
 
 .choose-heading {
@@ -76,7 +52,8 @@
   font-size: 26px;
   font-weight: 600;
   color: var(--text-main);
-  margin: 0 0 28px 4px;
+  text-align: center;
+  margin: 0 0 48px;
 }
 
 .choose-carousel {
@@ -108,8 +85,8 @@
 }
 
 .choose-card {
-  flex: 0 0 280px;
-  max-width: 280px;
+  flex: 0 0 340px;
+  max-width: 340px;
   scroll-snap-align: start;
   background: rgba(40, 36, 31, 1);
   border: 1px solid rgba(78, 78, 78, 1);
@@ -143,7 +120,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
+  gap: 0;
 }
 
 .choose-card-name {
@@ -155,6 +132,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  margin-bottom: 12px;
+  margin-top: 5px;
 }
 
 .choose-card-link {
@@ -168,6 +147,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  margin-bottom: 30px;
 }
 
 .choose-add-btn {
@@ -185,7 +165,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 10px;
   transition: background 0.15s ease;
 }
 .choose-add-btn:hover {
@@ -208,7 +188,8 @@
   margin-top: 36px;
   font-family: "Pretendard", system-ui, sans-serif;
   color: rgba(182, 117, 66, 1);
-  font-size: 15px;
+  font-size: 19px;
+  font-weight: 700;
   cursor: pointer;
   width: fit-content;
   margin-left: auto;
@@ -368,31 +349,22 @@
 }
 
 @media (max-width: 660px) {
-  .choose-page-wrap {
+  .choose-stage {
     padding: 32px 20px 60px;
   }
   .choose-header {
     padding: 20px 0 14px;
     flex-direction: column;
   }
-  .choose-header .time-portal-title,
-  .choose-header h1,
-  .choose-header div {
-    font-size: 18px !important;
-  }
-  .choose-back-btn {
-    position: static;
-    margin-bottom: 10px;
-  }
-  .choose-title {
-    font-size: 22px;
+  .choose-header .time-portal-title.choose-title {
+    font-size: 18px;
   }
   .choose-heading {
     font-size: 20px;
   }
   .choose-card {
-    flex-basis: 220px;
-    max-width: 220px;
+    flex-basis: 260px;
+    max-width: 260px;
   }
   .choose-modal {
     flex-direction: column;
