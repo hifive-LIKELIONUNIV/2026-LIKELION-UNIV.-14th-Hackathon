@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import mcmLogo from '../../assets/images/a5ec94c46d1ed7fd47ce06cad157f54ff1b65eb8.png'
 import { apiGet } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
+import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
+import wingIcon from '../../assets/images/아이콘 (1).svg'
 import './PhotoFramePage.css'
 
 const ERA_ORDER = ['1976', '2005', '2016', '2026']
@@ -45,7 +47,11 @@ function PhotoFramePage() {
   return (
     <div className="frame-page-wrap">
       <div className="wrap">
-        <div className="frame-subtitle">MCM과 함께한 여정을 확인하세요.</div>
+        <div className="frame-header">
+          <TimePortalTitle className="frame-title" />
+        </div>
+
+        <div className="frame-subtitle">MCM과 함께한 여정을 확인하세요</div>
 
         <div className="content-row">
           <div className="frame-card">
@@ -68,6 +74,11 @@ function PhotoFramePage() {
                 ))}
               </div>
               <img src={mcmLogo} className="frame-stamp" alt="" />
+
+              <div className="frame-footer">
+                <img src={wingIcon} className="frame-footer-logo" alt="" />
+                <span className="frame-footer-date">2026.08.25.TUE Team.HiFive</span>
+              </div>
             </div>
           </div>
 
