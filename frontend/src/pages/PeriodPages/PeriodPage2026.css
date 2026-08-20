@@ -31,11 +31,12 @@ html {
 .line {
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 18px;
 }
 
 .rule {
-    width: 100%;
+    width: 92%;
+    margin: 0 auto;
     height: 1px;
     background-color: #614833;
 }
@@ -61,7 +62,7 @@ html {
 
 .dot {
     position: absolute;
-    top: -9.5px;
+    top: -18.5px;
     left: 50%;
     width: 10px;
     height: 10px;
@@ -108,12 +109,13 @@ html {
 }
 
 .contentTitle {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: DM Serif Display;
     font-size: clamp(1.9rem, 2.4vw + 1rem, 2.8rem);
     font-weight: 700;
     line-height: 1.25;
-    color: #d99a6c;
+    color: rgba(172, 125, 88, 1);
     margin-bottom: 24px;
+    white-space: nowrap;
 }
 
 .contentMiniTitle {
@@ -268,5 +270,43 @@ html {
 
     .captureCta {
         width: 100%;
+    }
+}
+/* ---------- 화면 높이가 부족할 때만 여백/줄간격 압축 (큰 화면은 원래 디자인 유지) ---------- */
+@media (max-height: 900px) {
+    .page {
+        padding: clamp(16px, 2.5vw, 32px) clamp(20px, 5vw, 64px);
+    }
+
+    .page-wrap header {
+        margin-bottom: clamp(20px, 3vw, 40px);
+    }
+
+    .line {
+        gap: 10px;
+    }
+
+    .dot {
+        top: -10.5px;
+    }
+
+    .content {
+        padding-top: 4px;
+    }
+
+    .contentTitle {
+        margin-bottom: 14px;
+    }
+
+    .contentMiniTitle {
+        margin-bottom: 10px;
+    }
+
+    .contentTxt {
+        line-height: 1.6;
+    }
+
+    .captureCta {
+        margin-top: 20px;
     }
 }

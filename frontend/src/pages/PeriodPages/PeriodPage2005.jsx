@@ -4,6 +4,7 @@ import RegenCompareModal from '../../components/RegenCompareModal/RegenCompareMo
 import { useEraResult } from '../../hooks/useEraResult.js'
 import { apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
+import nextArrowIcon from '../../assets/images/Vector.png'
 import './PeriodPage2005.css'
 
 const ERA = '2005'
@@ -101,16 +102,16 @@ function PeriodPage2005() {
               <div className="contentTitle">2005, Republic of Korea</div>
               <div className="contentMiniTitle">새로운 출발</div>
               <div className="contentTxt">
-                2005년, MCM은 고유한 정체성을 이어가며 새로운 길을 향해 나아갔습니다.
-                오랫동안 사랑받아온 비세토스 패턴과 코냑 컬러는 그대로 이어가면서, 
-                그 위에 새로운 감각과 시선을 더했습니다. MCM의 무대는 점차 넓어졌고, 
-                더 다양한 도시와 사람들, 새로운 세대와 만나기 시작했습니다.
+                더 많은 사람이 세계를 자유롭게 오가기 시작한 2005년,
+                MCM은 성주그룹과 함께 새로운 여정을 시작했습니다.
+                익숙한 비세토스와 코냑 컬러를 간직한 채, 새로운 세대와
+                더 넓은 세계를 향해 나아갔습니다.
               </div>
             </div>
 
             <div className="sceneIntro">
               {/* TODO: 실제 카피로 교체 */}
-              더 넓은 세상으로 이어진 MCM의 여정을 따라가 보세요.
+              새로운 여정이 시작된 2005년의 장면을 만나보세요.
             </div>
 
             {error && <p className="period-error">{error}</p>}
@@ -123,7 +124,9 @@ function PeriodPage2005() {
               )}
               <button type="button" onClick={handleNextPeriod} disabled={regenerating}>
                 <div>다음 시대로</div>
-                <div>&#8250;</div>
+                <div>
+                  <img src={nextArrowIcon} className="next-arrow" alt="" aria-hidden="true" />
+                </div>
               </button>
             </div>
           </div>
