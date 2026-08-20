@@ -119,7 +119,12 @@ def era_2026_status(request, selection_id):
 def recommend_products_api(request, selection_id):
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     products = selection.product.recommended_products.all()[:4]
-    return JsonResponse({'products': [_product_dict(request, p) for p in products]})
+    return JsonResponse({
+        'products': [_product_dict(request, p) for p in products],
+        # 비로그인 방문객에게는 장바구니 담기 버튼을 프론트에서 숨기도록 알려주는 값.
+        # 실제 차단(401)은 add_to_cart 뷰가 이미 하고 있으니, 이건 UX 개선용.
+        'cart_enabled': request.user.is_authenticated,
+    })
 
 
 def passport_api(request, selection_id):
