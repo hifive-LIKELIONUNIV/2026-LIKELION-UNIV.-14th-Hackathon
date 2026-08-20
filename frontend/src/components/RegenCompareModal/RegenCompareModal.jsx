@@ -63,7 +63,7 @@ function RegenCompareModal({ selectionId, era, onClose, onConfirmed }) {
                 if (e.key === 'Enter' || e.key === ' ') setSelected('original')
               }}
             >
-              <p className="regen-modal__option-label">기존 사진</p>
+              {/* <p className="regen-modal__option-label">기존 사진</p> */}
               <img src={choices.original_image_url} alt="기존 사진" />
             </div>
             <div
@@ -75,7 +75,7 @@ function RegenCompareModal({ selectionId, era, onClose, onConfirmed }) {
                 if (e.key === 'Enter' || e.key === ' ') setSelected('candidate')
               }}
             >
-              <p className="regen-modal__option-label">새로 생성한 사진</p>
+              {/* <p className="regen-modal__option-label">새로 생성한 사진</p> */}
               <img src={choices.candidate_image_url} alt="새로 생성한 사진" />
             </div>
           </div>

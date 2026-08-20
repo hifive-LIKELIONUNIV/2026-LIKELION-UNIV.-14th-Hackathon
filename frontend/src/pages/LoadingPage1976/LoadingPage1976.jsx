@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
 import bgImage from '../../assets/images/1976 배경원본.png'
@@ -7,6 +7,7 @@ import { getSelectionId } from '../../api/session.js'
 import './LoadingPage1976.css'
 
 const ERA = '1976'
+const LONG_WAIT_MS = 23400
 
 function LoadingPage1976() {
   const navigate = useNavigate()
@@ -19,6 +20,21 @@ function LoadingPage1976() {
   }, [navigate, selectionId])
 
   const { progress, error, retry } = useEraGeneration(selectionId, ERA, handleDone)
+
+  const [isLongWait, setIsLongWait] = useState(false)
+
+  useEffect(() => {
+    if (error) return undefined
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) setIsLongWait(false)
+    })
+    const timer = setTimeout(() => setIsLongWait(true), LONG_WAIT_MS)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [error])
 
   return (
     <div className="loading-page loading-page--1976">
@@ -56,7 +72,9 @@ function LoadingPage1976() {
               </div>
 
               <p className="loading-page__caption">
-                MCM이 독일 뮌헨에서 탄생한 순간으로 출발합니다
+                {isLongWait
+                  ? '1976년으로 이동중입니다. 조금만 기다려주세요..'
+                  : 'MCM이 독일 뮌헨에서 탄생한 순간으로 출발합니다'}
               </p>
             </>
           )}
