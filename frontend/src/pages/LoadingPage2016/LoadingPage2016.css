@@ -23,7 +23,8 @@
 .loading-page--2016 .loading-page__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(8, 6, 8, 0.55);
+  /* background: rgba(8, 6, 8, 0.55); */
+  background: rgba(8, 6, 8, 0.9);
   z-index: 1;
 }
 
@@ -46,7 +47,12 @@
   padding: 14.4444cqw 0;
   box-sizing: border-box;
 }
-
+.loading-page__content .orbit-ring {
+  width: 46cqw;
+  height: 46cqw;
+  margin-bottom: -10cqw;
+  /* margin-bottom: -4cqw; */
+}
 .loading-page__year {
   margin: 0 0 4.4444cqw;
   color: #a26230;
@@ -78,7 +84,9 @@
 }
 
 .loading-page__caption {
-  width: 38.1944cqw;
+  /* width: 38.1944cqw; */
+  width: auto;
+  white-space: nowrap;
   margin: 0;
   color: #8e8e8e;
   text-align: center;
