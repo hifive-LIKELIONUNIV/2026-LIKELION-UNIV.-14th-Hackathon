@@ -216,7 +216,11 @@ function PhotoCapturePage() {
             {currentShotNum} / {TOTAL_PHOTOS}
           </span>
           <span className="shot-counter-label">
-            {saving ? '사진 저장 중...' : '촬영 진행 중'}
+            {saving
+              ? '사진 저장 중...'
+              : count === null && photos.length > 0 && photos.length < TOTAL_PHOTOS
+                ? '3초 후 촬영이 재개됩니다'
+                : '촬영 진행 중'}
           </span>
         </div>
 
