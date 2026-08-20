@@ -105,7 +105,7 @@ function TimeMachinePage() {
         />
 
         <div className="tm-page__content">
-          <h1 className="tm-page__title">타임머신이 시작되었습니다.</h1>
+          <h1 className="tm-page__title">타임포탈이 시작되었습니다.</h1>
           <p className="tm-page__subtitle">곧 얼굴 인식 화면으로 이동합니다.</p>
 
           <div className="tm-postcard">
