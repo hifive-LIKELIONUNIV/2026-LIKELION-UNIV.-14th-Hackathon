@@ -27,18 +27,9 @@ def _product_dict(request, product):
 
 
 def products_list(request):
-    """select_bag GET과 동일한 상품 조회 로직 (장바구니 있으면 장바구니, 없으면 기본 상품)."""
-    cart_items = []
-    if request.user.is_authenticated:
-        from .models import CartItem
-        cart_items = CartItem.objects.filter(user=request.user)[:3]
-
-    if cart_items:
-        products = [item.product for item in cart_items]
-        message = "마음에 드는 가방을 골라주세요"
-    else:
-        products = Product.objects.filter(is_default=True)[:3]
-        message = "취향에 맞는 가방을 골라주세요"
+    """항상 지정된 기본 상품 3개만 노출."""
+    products = Product.objects.filter(is_default=True)[:3]
+    message = "취향에 맞는 가방을 골라주세요"
 
     return JsonResponse({
         'message': message,
