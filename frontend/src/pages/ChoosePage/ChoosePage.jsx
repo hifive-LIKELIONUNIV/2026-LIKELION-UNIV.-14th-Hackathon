@@ -17,6 +17,8 @@ function ChoosePage() {
   const selectionId = location.state?.selectionId ?? getSelectionId()
 
   const [products, setProducts] = useState([])
+  // 응답에 cart_enabled가 없는 경우엔 기존 동작 그대로(true) 유지
+  const [cartEnabled, setCartEnabled] = useState(true)
   const [addedIds, setAddedIds] = useState([])
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -32,6 +34,10 @@ function ChoosePage() {
             image: product.image_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
           })),
         )
+        // 로그인 여부에 따라 서버가 내려주는 값. UX용이고, 실제 차단은 서버가 해야 함.
+        if (typeof data.cart_enabled === 'boolean') {
+          setCartEnabled(data.cart_enabled)
+        }
       })
       .catch(() => {})
   }, [selectionId])
@@ -99,15 +105,17 @@ function ChoosePage() {
                     >
                       자세히 보기
                     </button>
-                    <button
-                      type="button"
-                      className={
-                        isAdded ? 'choose-add-btn is-added' : 'choose-add-btn'
-                      }
-                      onClick={() => handleAddToggle(product.id)}
-                    >
-                      {isAdded ? '담김' : '+ 장바구니 담기'}
-                    </button>
+                    {cartEnabled && (
+                      <button
+                        type="button"
+                        className={
+                          isAdded ? 'choose-add-btn is-added' : 'choose-add-btn'
+                        }
+                        onClick={() => handleAddToggle(product.id)}
+                      >
+                        {isAdded ? '담김' : '+ 장바구니 담기'}
+                      </button>
+                    )}
                   </div>
                 </div>
               )
