@@ -7,8 +7,12 @@ import './LoginPage.css'
 
 function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  // 해커톤 키오스크 운영용 — 방문객마다 계정을 새로 만들 필요 없이, 미리 만들어둔
+  // 데모 계정(관리자 권한 없음)으로 입력창을 채워둬서 '로그인하기' 버튼만 누르면
+  // 바로 체험 가능하게 함. 관리자 계정을 여기 쓰면 안 됨 — 프론트 코드는 브라우저에
+  // 그대로 노출되므로, 이 계정이 유출돼도 admin 페이지 접근이 안 되게 일반 계정으로 둠.
+  const [email, setEmail] = useState('Timeportal@mcm.com')
+  const [password, setPassword] = useState('mcmproject')
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [submitting, setSubmitting] = useState(false)
