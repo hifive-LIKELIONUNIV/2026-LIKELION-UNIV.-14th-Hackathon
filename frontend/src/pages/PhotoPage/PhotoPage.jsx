@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ringImage from '../../assets/images/빙글빙글 원.svg'
 import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
@@ -10,12 +11,50 @@ function PhotoPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+
+  // idle | ready | error  (PeriodPage2026과 동일한 패턴)
+  const [cameraState, setCameraState] = useState('idle')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
+        }
+        streamRef.current = stream
+        if (videoRef.current) videoRef.current.srcObject = stream
+        setCameraState('ready')
+      } catch (err) {
+        console.error('[PhotoPage] 웹캠 접근 실패:', err)
+        if (!cancelled) setCameraState('error')
+      }
+    }
+
+    initCamera()
+
+    return () => {
+      cancelled = true
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+    }
+  }, [])
+
   const handleBack = () => {
     navigate(-1)
   }
 
   const handleCapture = () => {
-    // 촬영 시작 페이지로 location.state 함께 전달하며 이동
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+    }
     navigate('/photo-capture', { state: location.state })
   }
 
@@ -50,15 +89,33 @@ function PhotoPage() {
         <p className="subtitle">카메라에 얼굴을 정면으로 비춰주세요.</p>
 
         <div className="capture-frame">
+          <video
+            ref={videoRef}
+            className="capture-frame__video"
+            autoPlay
+            playsInline
+            muted
+            style={{ display: cameraState === 'ready' ? 'block' : 'none' }}
+          />
+
           <span className="corner tl" />
           <span className="corner tr" />
           <span className="corner bl" />
           <span className="corner br" />
-          <span className="camera-icon-wrap">
-            <img src={cameraIconYellow} className="camera-icon" alt="" />
-            <span className="camera-lens" />
-          </span>
-          <div className="camera-status">카메라 활성화 중</div>
+
+          {cameraState !== 'ready' && (
+            <>
+              <span className="camera-icon-wrap">
+                <img src={cameraIconYellow} className="camera-icon" alt="" />
+                <span className="camera-lens" />
+              </span>
+              <div className="camera-status">
+                {cameraState === 'error'
+                  ? '카메라 권한을 확인해주세요'
+                  : '카메라 활성화 중'}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="disclaimer">

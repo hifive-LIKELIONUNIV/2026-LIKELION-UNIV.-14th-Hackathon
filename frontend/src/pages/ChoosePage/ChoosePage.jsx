@@ -11,15 +11,6 @@ import './ChoosePage.css'
 
 const FALLBACK_IMAGES = [loaferImg, roundBagImg, bucketBagImg, twillyImg]
 
-// TODO: 백엔드 DB에 실제 상품 데이터 들어오면 이 목업은 지우고
-// 아래 useEffect의 setProducts(data.products...) 결과만 쓰도록 되돌리기.
-const MOCK_PRODUCTS = [
-  { id: 'mock-1', name: '로퍼 상품', image: loaferImg },
-  { id: 'mock-2', name: '라운드백 상품', image: roundBagImg },
-  { id: 'mock-3', name: '버킷백 상품', image: bucketBagImg },
-  { id: 'mock-4', name: '트윌리 스카프', image: twillyImg },
-]
-
 function ChoosePage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -35,23 +26,14 @@ function ChoosePage() {
     if (!selectionId) return
     apiGet(`/api/shop/capture/${selectionId}/recommend/`)
       .then((data) => {
-        const list = data.products ?? []
-        if (list.length === 0) {
-          // TODO: DB에 실제 상품이 들어오면 이 분기 지우기
-          setProducts(MOCK_PRODUCTS)
-          return
-        }
         setProducts(
-          list.map((product, index) => ({
+          (data.products ?? []).map((product, index) => ({
             ...product,
             image: product.image_url || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
           })),
         )
       })
-      .catch(() => {
-        // TODO: DB에 실제 상품이 들어오면 이 분기 지우기
-        setProducts(MOCK_PRODUCTS)
-      })
+      .catch(() => {})
   }, [selectionId])
 
   useEffect(() => {
