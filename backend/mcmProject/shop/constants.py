@@ -5,6 +5,8 @@
 - title/subtitle/description: 결과 화면에 노출되는 카피 (임시 문구 — 기획팀 문구로 교체 필요)
 """
 
+from django.conf import settings
+
 ERA_ORDER = ['1976', '2005', '2016', '2026']
 
 ERA_META = {
@@ -48,22 +50,18 @@ def next_era(era: str):
 
 
 # ---- 네컷(passport) 프레임 설정 ----
-# 지금은 프레임 이미지가 없어서 PASSPORT_FRAME_PATH가 비어있고, 그 경우 아래
-# PASSPORT_FRAME_SLOTS 좌표 그대로 단색 배경 위에 사진만 격자로 배치한다(기존 방식).
-#
-# 나중에 프론트/디자인팀에서 프레임 이미지(사진 자리만 투명하게 뚫린 PNG)를 받으면:
-#   1. 이미지 파일을 backend/mcmProject/media/frames/ 같은 곳에 넣고
-#   2. PASSPORT_FRAME_PATH에 그 경로를 지정하고
-#   3. 그 프레임 안에서 사진이 들어갈 실제 자리(x, y, 너비, 높이)에 맞게
-#      아래 PASSPORT_FRAME_SLOTS 값을 프레임 디자인에 맞게 수정하면 됨.
-# 순서는 1976 -> 2005 -> 2016 -> 2026.
-PASSPORT_FRAME_PATH = None  # 예: BASE_DIR / 'media' / 'frames' / 'time_passport_frame.png'
+# 디자인팀에서 받은 프레임 PNG v2 적용 (media/frames/time_passport_frame.png,
+# 515x676, 사진 자리 4곳이 실제로 alpha=0으로 투명 처리되어 있는 것 확인함— 스탬프/로고/
+# 하단 날짜 텍스트가 추가된 리뉴얼 버전이라 슬롯 좌표도 이전 프레임과 살짝 달라졌음).
+# 아래 슬롯 좌표는 이미지에서 투명 영역의 경계를 직접 스캔해서 뽑아낸 정확한 값 —
+# 순서는 1976 -> 2005 -> 2016 -> 2026 (좌상단 -> 우상단 -> 좌하단 -> 우하단).
+PASSPORT_FRAME_PATH = settings.MEDIA_ROOT / 'frames' / 'time_passport_frame.png'
 
 PASSPORT_FRAME_SLOTS = [
-    (16, 16, 480, 640),
-    (512, 16, 480, 640),
-    (16, 672, 480, 640),
-    (512, 672, 480, 640),
+    (39, 37, 209, 279),
+    (267, 37, 209, 279),
+    (39, 335, 209, 279),
+    (267, 335, 209, 279),
 ]
 
 # 프레임이 없을 때(PASSPORT_FRAME_PATH가 None) 쓰는 기본 캔버스 크기/배경색.

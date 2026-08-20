@@ -5,6 +5,7 @@ import arrowImage from '../../assets/images/이전_왼쪽 화살표.svg'
 import { apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
 import './PhotoEndPage.css'
+import nextArrowIcon from '../../assets/images/Vector.png'
 
 function PhotoEndPage() {
   const navigate = useNavigate()
@@ -108,9 +109,16 @@ function PhotoEndPage() {
           disabled={selectedIndex === null || submitting}
         >
           {submitting ? '선택 중...' : '선택한 사진으로 시간 여행 시작하기'}
-          <span className="primary-btn-arrow" aria-hidden="true">
+          {/* <span className="primary-btn-arrow" aria-hidden="true">
             &#8250;
-          </span>
+          </span> */}
+          <img
+                src={nextArrowIcon}
+                className="start-page__cta-arrow"
+                alt=""
+                aria-hidden="true"
+                width="8"
+              />
         </button>
       </section>
     </>

@@ -14,13 +14,7 @@
             <div>
                 <input type="radio" name="product_id" value="{{ product.id }}" id="product-{{ product.id }}" required>
                 <label for="product-{{ product.id }}">
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
-                    {% endif %}
-                    <div>{{ product.name }}</div>
-                    {% if product.description %}
-                        <div>{{ product.description }}</div>
-                    {% endif %}
+                    {{ product.name }}
                 </label>
             </div>
         {% empty %}

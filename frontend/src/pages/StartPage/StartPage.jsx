@@ -3,6 +3,7 @@ import OrbitRing from '../../components/OrbitRing/OrbitRing.jsx'
 import TimePortalTitle from '../../components/TimePortalTitle/TimePortalTitle.jsx'
 import bgImage from '../../assets/images/image 1.png'
 import './StartPage.css'
+import nextArrowIcon from '../../assets/images/Vector.png'
 
 function StartPage() {
   const navigate = useNavigate()
@@ -37,9 +38,15 @@ function StartPage() {
               onClick={handleStart}
             >
               체험 시작하기
-              <span className="start-page__cta-arrow" aria-hidden="true">
+              {/* <span className="start-page__cta-arrow" aria-hidden="true">
                 &#8250;
-              </span>
+              </span> */}
+              <img
+                src={nextArrowIcon}
+                className="start-page__cta-arrow"
+                alt=""
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>

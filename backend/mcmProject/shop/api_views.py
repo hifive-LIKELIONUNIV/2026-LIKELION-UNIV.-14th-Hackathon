@@ -19,7 +19,7 @@ def _product_dict(request, product):
     return {
         'id': product.id,
         'name': product.name,
-        'subtitle': product.subtitle,
+        'subtitle': product.detail_info,
         'description': product.description,
         'image_url': request.build_absolute_uri(product.image.url) if product.image else None,
         'price': str(product.price) if product.price is not None else None,
