@@ -12,6 +12,15 @@ import './ChoosePage.css'
 
 const FALLBACK_IMAGES = [loaferImg, roundBagImg, bucketBagImg, twillyImg]
 
+// 서버에서 Decimal("930000.00") 같은 문자열/숫자로 내려오는 가격을
+// "₩930,000" 형태로 정리 (불필요한 소수점 .00 제거 + 천 단위 콤마 + 원화 기호)
+function formatPrice(price) {
+  if (price === null || price === undefined || price === '') return ''
+  const numeric = Number(price)
+  if (Number.isNaN(numeric)) return String(price)
+  return `₩${numeric.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}`
+}
+
 function ChoosePage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -179,7 +188,7 @@ function ChoosePage() {
               <div className="choose-modal-brand">MCM</div>
               <div className="choose-modal-name">{selectedProduct.name}</div>
               <div className="choose-modal-price">
-                {selectedProduct.price ? `$${selectedProduct.price}` : ''}
+                {formatPrice(selectedProduct.price)}
               </div>
               <div className="choose-modal-divider"></div>
               <p className="choose-modal-desc">
