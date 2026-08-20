@@ -1,0 +1,18 @@
+name: Deploy to server
+
+# Main 브랜치에 push될 때마다 서버로 SSH 접속해서 deploy.sh를 실행한다.
+on:
+  push:
+    branches: [Main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: bash /root/timeportal/deploy.sh
