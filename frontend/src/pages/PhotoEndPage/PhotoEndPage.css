@@ -238,9 +238,10 @@ section {
 }
 
 .primary-btn-arrow {
-  font-size: 18px;
-  line-height: 1;
-  transform: translateY(-1px);
+  width: 6px;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

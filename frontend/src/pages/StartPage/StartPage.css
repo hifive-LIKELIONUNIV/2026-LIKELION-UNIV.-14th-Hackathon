@@ -143,8 +143,10 @@
 }
 
 .start-page__cta-arrow {
-  font-size: 1.3889cqw;
-  line-height: 1;
+  width: 0.9722cqw;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ---------- mobile layout (matches phone mockup) ---------- */
@@ -207,6 +209,6 @@
   }
 
   .start-page__cta-arrow {
-    font-size: 14px;
+    width: 10px;
   }
 }

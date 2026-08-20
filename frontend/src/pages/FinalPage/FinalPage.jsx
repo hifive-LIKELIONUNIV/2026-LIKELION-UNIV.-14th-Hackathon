@@ -8,7 +8,7 @@ import './FinalPage.css'
 
 function FinalPage() {
   const navigate = useNavigate()
-  const [showModal, setShowModal] = useState(false)
+  const [modalType, setModalType] = useState(null) // 'alone' | 'staff' | null
 
   const handleRestart = () => {
     // 키오스크 특성상 다음 사용자를 위해 세션/장바구니를 초기화
@@ -36,25 +36,35 @@ function FinalPage() {
             <button
               type="button"
               className="final-page__option"
-              onClick={() => setShowModal(true)}
+              onClick={() => setModalType('alone')}
             >
               혼자 자유롭게 둘러볼게요
             </button>
             <button
               type="button"
               className="final-page__option"
-              onClick={() => setShowModal(true)}
+              onClick={() => setModalType('staff')}
             >
               직원과 함께 둘러볼게요
             </button>
           </div>
 
-          {showModal && (
+          {modalType && (
             <div className="final-page__modal-overlay">
               <div className="final-page__modal">
-                TIME PORTAL의 여정이 마무리되었습니다.
-                <br />
-                이제 MCM HAUS에서 마음에 든 제품을 직접 만나보세요.
+                {modalType === 'alone' ? (
+                  <>
+                    TIME PORTAL의 여정이 마무리되었습니다.
+                    <br />
+                    이제 MCM HAUS에서 마음에 든 제품을 직접 만나보세요.
+                  </>
+                ) : (
+                  <>
+                    TIME PORTAL의 여정이 마무리되었습니다.
+                    <br />
+                    잠시만 기다려주세요. 직원이 잠시 후 도착합니다.
+                  </>
+                )}
               </div>
               <button
                 type="button"
