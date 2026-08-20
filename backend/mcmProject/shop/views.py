@@ -46,17 +46,8 @@ def select_bag(request):
         # 가방 선택 끝나면 바로 촬영 화면으로 이동
         return redirect('shop:capture_photo', selection_id=selection.id)
 
-    cart_items = []
-
-    if request.user.is_authenticated:
-        cart_items = CartItem.objects.filter(user=request.user)[:3]
-
-    if cart_items:
-        products = [item.product for item in cart_items]
-        message = "마음에 드는 가방을 골라주세요"
-    else:
-        products = Product.objects.filter(is_default=True)[:3]
-        message = "취향에 맞는 가방을 골라주세요"
+    products = Product.objects.filter(is_default=True)[:3]
+    message = "취향에 맞는 가방을 골라주세요"
 
     context = {
         'products': products,
