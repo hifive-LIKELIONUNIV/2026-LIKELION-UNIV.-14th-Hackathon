@@ -4,6 +4,7 @@ import RegenCompareModal from '../../components/RegenCompareModal/RegenCompareMo
 import { useEraResult } from '../../hooks/useEraResult.js'
 import { apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
+import nextArrowIcon from '../../assets/images/Vector.png'
 import './PeriodPage1976.css'
 
 const ERA = '1976'
@@ -101,11 +102,9 @@ function PeriodPage1976() {
               <div className="contentTitle">1976, Munich</div>
               <div className="contentMiniTitle">MCM의 출발</div>
               <div className="contentTxt">
-                1976년, 독일 뮌헨에서 MCM의 이야기가 시작되었습니다.
-                여행을 즐기고 새로운 문화를 찾아 나서는 사람들이 늘어나던 시기, 
-                MCM은 그들의 여정과 함께할 가방을 만들기 시작했습니다. 
-                월계수와 다이아몬드를 담은 로고부터 코냑 컬러, 비세토스 패턴까지, 
-                현재 MCM의 상징들도 함께 모습을 드러내기 시작했습니다.
+                여행이 새로운 라이프스타일이 되던 시대, MCM은 독일
+                뮌헨에서 탄생했습니다. 여행용 가죽 제품과 비세토스
+                패턴은 이동하는 사람들의 새로운 상징이 되었습니다.
               </div>
             </div>
 
@@ -123,7 +122,9 @@ function PeriodPage1976() {
               )}
               <button type="button" onClick={handleNextPeriod} disabled={regenerating}>
                 <div>다음 시대로</div>
-                <div>&#8250;</div>
+                <div>
+                  <img src={nextArrowIcon} className="next-arrow" alt="" aria-hidden="true" />
+                </div>
               </button>
             </div>
           </div>

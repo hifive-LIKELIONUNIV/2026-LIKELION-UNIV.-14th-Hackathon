@@ -4,6 +4,7 @@ import RegenCompareModal from '../../components/RegenCompareModal/RegenCompareMo
 import { useEraResult } from '../../hooks/useEraResult.js'
 import { apiPostForm } from '../../api/client.js'
 import { getSelectionId } from '../../api/session.js'
+import nextArrowIcon from '../../assets/images/Vector.png'
 import './PeriodPage2016.css'
 
 const ERA = '2016'
@@ -101,16 +102,16 @@ function PeriodPage2016() {
               <div className="contentTitle">2016, Republic of Korea</div>
               <div className="contentMiniTitle">Made to Move, 40년의 여정</div>
               <div className="contentTxt">
-                2016년, 창립 40주년을 맞은 MCM은 여행과 이동에 대한 이야기를 새로운 방식으로 이어갔습니다. 
-                변화하는 시대의 움직임에 주목하며, 
-                ‘Made to Move’ 컬렉션을 통해 실용적인 디자인과 새로운 감각을 선보였습니다. 
-                MCM이 이어온 여행의 가치는 다양한 움직임과 만나며 더 넓어졌습니다.
+                &lsquo;Made to Move&rsquo;라는 이름으로 이동의 가능성을
+                새롭게 해석한 2016년, MCM은 창립 40주년을 맞았습니다.
+                여행에서 시작된 MCM의 이야기는 도시와 일상을 자유롭게
+                넘나드는 새로운 라이프스타일로 확장되었습니다.
               </div>
             </div>
 
             <div className="sceneIntro">
               {/* TODO: 실제 카피로 교체 */}
-              새로운 시선으로 움직임을 이야기한 MCM을 만나보세요.
+              도시와 일상을 넘나드는 2016년의 장면을 만나보세요.
             </div>
 
             {error && <p className="period-error">{error}</p>}
@@ -123,7 +124,9 @@ function PeriodPage2016() {
               )}
               <button type="button" onClick={handleNextPeriod} disabled={regenerating}>
                 <div>다음 시대로</div>
-                <div>&#8250;</div>
+                <div>
+                  <img src={nextArrowIcon} className="next-arrow" alt="" aria-hidden="true" />
+                </div>
               </button>
             </div>
           </div>
