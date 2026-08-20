@@ -622,9 +622,7 @@ def passport_qrcode(request, selection_id):
     """네컷 미리보기 URL을 QR코드 이미지로 즉석 생성해서 반환.
     사용자가 휴대폰으로 스캔하면 미리보기 화면으로 이동하고, 거기서 다운로드 버튼을 눌러야 함."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
-    target_url = request.build_absolute_uri(
-        reverse('shop:passport_preview', args=[selection.id])
-    )
+    target_url = request.build_absolute_uri(f'/passport-preview/{selection.id}')
 
     img = qrcode.make(target_url)
     buffer = io.BytesIO()

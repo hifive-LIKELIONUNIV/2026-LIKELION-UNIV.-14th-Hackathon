@@ -21,6 +21,7 @@ import PeriodPage2026 from './pages/PeriodPages/PeriodPage2026.jsx'
 import PhotoFramePage from './pages/PhotoFramePage/PhotoFramePage.jsx'
 import ChoosePage from './pages/ChoosePage/ChoosePage.jsx'
 import PhotoCapturePage from './pages/PhotoCapturePage/PhotoCapturePage.jsx'
+import PassportPreviewPage from './pages/PassportPreviewPage/PassportPreviewPage.jsx'
 
 function App() {
   useEffect(() => {
@@ -49,6 +50,7 @@ function App() {
       <Route path="/photo-frame" element={<PhotoFramePage />} />
       <Route path="/choose" element={<ChoosePage />} />
       <Route path="/photo-capture" element={<PhotoCapturePage />} />
+      <Route path="/passport-preview/:id" element={<PassportPreviewPage />} />
     </Routes>
   )
 }
