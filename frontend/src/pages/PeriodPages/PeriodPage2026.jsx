@@ -176,10 +176,17 @@ function PeriodPage2026() {
                 당신과 함께하는 MCM의 새로운 여정
               </div>
               <div className="contentTxt">
-                MCM의 50년, 다음 여정을 시작합니다.
-                <br />
-                2026년 MCM 매장에서의 모습을 담아주세요.
+                2026년, MCM은 50번째 해를 맞았습니다. 
+                뮌헨에서 시작된 여정은 반세기를 지나 오늘까지 이어졌습니다. 
+                지난 시간을 바탕으로, MCM은 새로운 여정을 향해 나아갑니다.
+
+
               </div>
+            </div>
+
+            <div className="sceneIntro">
+              {/* TODO: 실제 카피로 교체 */}
+              MCM의 새로운 50년이 시작되는 순간을 함께해보세요.
             </div>
 
             {error && <p className="period-error">{error}</p>}
