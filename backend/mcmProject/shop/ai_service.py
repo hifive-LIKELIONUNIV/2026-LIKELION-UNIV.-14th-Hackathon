@@ -38,7 +38,7 @@ _RETRY_BACKOFF_SECONDS = 2  # 1차 실패 후 2초, 2차 실패 후 4초 대기
 # 여러 시대를 동시에 백그라운드로 미리 생성하다 보니, 프로세스 전체에서 실제로
 # OpenAI에 동시에 나가는 이미지 생성 요청 수를 제한해서 rate limit을 피한다.
 # (여러 방문자가 동시에 체험 중이어도 이 값을 넘는 요청은 줄을 서서 기다림)
-_GENERATION_SEMAPHORE = threading.Semaphore(2)
+_GENERATION_SEMAPHORE = threading.Semaphore(4)
 
 # 감지된 원본 얼굴 비율보다 이 정도 배율만큼 작게 지정 (여전히 크다는 피드백으로 0.9 -> 0.8 -> 0.7로 축소)
 FACE_SIZE_SHRINK_FACTOR = 0.7
