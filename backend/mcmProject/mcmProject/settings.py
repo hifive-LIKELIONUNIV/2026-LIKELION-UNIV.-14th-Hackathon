@@ -37,11 +37,15 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# 팀원 로컬 .env엔 DJANGO_DEBUG가 없는 경우가 대부분이라 기본값은 기존 동작(True) 유지 —
+# 실제 배포 서버 .env에만 DJANGO_DEBUG=False를 추가해서 끈다.
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
 # 개발용 설정 — 로컬 네트워크(휴대폰 QR 테스트 등)에서 어떤 호스트로 접속해도 허용.
-# DEBUG=True인 동안만 쓰는 값이라 지금은 괜찮지만, 실제 배포 시에는 실제 도메인/IP로 좁혀야 함.
-ALLOWED_HOSTS = ['*']
+# 배포 서버 .env에 DJANGO_ALLOWED_HOSTS=timeportal-mcm.site,www.timeportal-mcm.site
+# 처럼 콤마로 구분해서 넣으면 그 값으로 좁혀지고, 없으면(로컬 등) 기존처럼 전체 허용.
+_allowed_hosts_env = os.environ.get("DJANGO_ALLOWED_HOSTS")
+ALLOWED_HOSTS = _allowed_hosts_env.split(',') if _allowed_hosts_env else ['*']
 
 # React(Vite) 개발 서버가 /api, /shop 등을 이 서버로 프록시(changeOrigin)하기 때문에
 # Django가 보는 Host는 이 서버 자신이 되지만, 브라우저가 보내는 Origin 헤더는
@@ -50,6 +54,16 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
 ]
+# 배포 서버 .env에 DJANGO_CSRF_TRUSTED_ORIGINS=https://timeportal-mcm.site 처럼
+# 넣으면 프로덕션 도메인도 신뢰 origin에 추가됨.
+_csrf_trusted_env = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS")
+if _csrf_trusted_env:
+    CSRF_TRUSTED_ORIGINS += _csrf_trusted_env.split(',')
+
+# nginx가 TLS를 종료하고 gunicorn에는 일반 HTTP로 프록시하므로, DEBUG=False일 때도
+# Django가 원 요청이 HTTPS였다는 걸 알 수 있도록 표준 프록시 헤더를 신뢰하게 함
+# (CSRF/보안 쿠키 판단에 필요 — nginx가 X-Forwarded-Proto를 안 보내고 있다면 무해함).
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
