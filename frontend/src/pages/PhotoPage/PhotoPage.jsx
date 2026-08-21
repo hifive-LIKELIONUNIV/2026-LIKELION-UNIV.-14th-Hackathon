@@ -86,7 +86,7 @@ function PhotoPage() {
 
       <section>
         <div className="title">얼굴을 인식해주세요</div>
-        <p className="subtitle">카메라에 얼굴을 정면으로 비춰주세요.</p>
+        <p className="subtitle">카메라에 얼굴을 정면으로 비춰주세요</p>
 
         <div className="capture-frame">
           <video
@@ -126,7 +126,7 @@ function PhotoPage() {
             </span>
             &nbsp;
             <span className="disclaimer-line2">
-              체험 이미지 생성에만 사용됩니다.
+              체험 이미지 생성에만 사용됩니다
             </span>
           </span>
         </div>

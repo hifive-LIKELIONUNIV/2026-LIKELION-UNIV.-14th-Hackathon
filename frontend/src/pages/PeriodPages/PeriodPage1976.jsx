@@ -90,8 +90,8 @@ function PeriodPage1976() {
                   />
                 </svg>
                 <div className="loading-text">
-                  <p>장면을 준비하고 있어요.</p>
-                  <p>잠시만 기다려주세요.</p>
+                  <p>장면을 준비하고 있어요</p>
+                  <p>잠시만 기다려주세요</p>
                 </div>
               </div>
             )}

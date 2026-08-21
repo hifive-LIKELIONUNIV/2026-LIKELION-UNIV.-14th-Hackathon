@@ -184,7 +184,7 @@ function PhotoCapturePage() {
 
       <section>
         <div className="title">얼굴을 인식해주세요</div>
-        <p className="subtitle">정면을 바라보고 얼굴을 화면 중앙에 맞춰주세요.</p>
+        <p className="subtitle">정면을 바라보고 얼굴을 화면 중앙에 맞춰주세요</p>
 
         <div className="capture-frame">
           <video
@@ -198,7 +198,7 @@ function PhotoCapturePage() {
 
           {cameraState === 'idle' && <p className="camera-status-text">카메라 활성화 중...</p>}
           {cameraState === 'error' && (
-            <p className="camera-status-text">카메라를 사용할 수 없어요. 권한을 확인해주세요.</p>
+            <p className="camera-status-text">카메라를 사용할 수 없어요. 권한을 확인해주세요</p>
           )}
 
           <span className="corner tl" />
@@ -232,7 +232,7 @@ function PhotoCapturePage() {
             </span>
             &nbsp;
             <span className="disclaimer-line2">
-              체험 이미지 생성에만 사용됩니다.
+              체험 이미지 생성에만 사용됩니다
             </span>
           </span>
         </div>

@@ -29,7 +29,7 @@ function StartPage() {
           <div className="start-page__bottom">
             <div className="start-page__spacer" aria-hidden="true" />
             <p className="start-page__subtitle">
-              MCM의 시간을 건너, 그 시대 속 당신을 만나보세요.
+              MCM의 시간을 건너, 그 시대 속 당신을 만나보세요
             </p>
             <div className="start-page__spacer" aria-hidden="true" />
             <button
