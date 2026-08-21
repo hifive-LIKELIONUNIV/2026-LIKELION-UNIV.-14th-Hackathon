@@ -1,4 +1,4 @@
-# 🕰️ TIME PORTAL
+# 🕰️ MCM-TIME PORTAL
 
 **MCM의 시간을 건너, 그 시대 속 나를 만나보세요.**
 
