@@ -143,10 +143,12 @@
 }
 
 .start-page__cta-arrow {
-  width: 0.9722cqw;
+  width: 0.7cqw;
   height: auto;
   display: block;
   flex-shrink: 0;
+  position: relative;
+  top: 1px;
 }
 
 /* ---------- mobile layout (matches phone mockup) ---------- */
@@ -209,6 +211,6 @@
   }
 
   .start-page__cta-arrow {
-    width: 10px;
+    width: 7px;
   }
 }

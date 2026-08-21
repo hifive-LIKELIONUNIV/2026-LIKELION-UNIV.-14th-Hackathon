@@ -58,7 +58,7 @@ function LoadingPage2026() {
           </div>
 
           <p className="loading-page__caption">
-            MCM과 함께 당신만의 여정을 시작해보세요.
+            MCM과 함께 당신만의 여정을 시작해보세요
           </p>
         </div>
       </div>

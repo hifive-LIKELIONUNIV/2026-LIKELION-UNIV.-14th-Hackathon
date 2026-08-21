@@ -39,7 +39,7 @@ function PhotoEndPage() {
       // 장고 서브밋 성공 시 로딩 페이지로 이동
       navigate('/loading-1976', { state: { ...location.state, selectionId } })
     } catch (err) {
-      setError(err.message || '사진 선택에 실패했어요.')
+      setError(err.message || '사진 선택에 실패했어요')
     } finally {
       setSubmitting(false)
     }
@@ -73,7 +73,7 @@ function PhotoEndPage() {
 
       <section>
         <div className="title">어떤 사진으로 떠날까요?</div>
-        <p className="subtitle">마음에 드는 사진 한 장을 선택해주세요.</p>
+        <p className="subtitle">마음에 드는 사진 한 장을 선택해주세요</p>
 
         <div className="photo-select-row">
           {photos.map((photo, index) => (
