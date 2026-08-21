@@ -119,6 +119,7 @@
 
   .loading-page__content {
     padding: 60px 24px;
+    justify-content: center;
   }
 
   .loading-page__content .orbit-ring {
@@ -140,9 +141,9 @@
   }
 
   .loading-page__caption {
-    white-space: normal;
-    font-size: 14px;
-    padding: 0 12px;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 0 8px;
   }
 
   .loading-page__retry {
