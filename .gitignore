@@ -31,11 +31,21 @@ __pycache__/
 myvenv/
 venv/
 
-# 테스트/생성용 이미지는 제외 (레퍼런스 자산은 포함되어야 하므로 폴더 단위로 지정)
-image_test/face_photo.png
-image_test/result_*.png
-image_test/results/
+# image_test/, test_generate_all.py는 실제 서비스 코드(ai_service.py)로 이식되기 전
+# 초기 프로토타입 테스트용 스크립트/이미지라 저장소에 올릴 필요 없음 (로컬 참고용으로만 유지)
+image_test/
+test_generate_all.py
+
 backend/mcmProject/media/captured_photos/
 backend/mcmProject/media/persona_results/
 backend/mcmProject/media/passports/
 backend/mcmProject/db.sqlite3
+
+# 팀원 개인 로컬 Claude Code 설정 (권한/경로가 각자 PC 기준이라 공유 대상 아님)
+.claude/
+
+# 팀 내부 작업 인수인계/트러블슈팅 노트 — 로컬 참고용, 저장소엔 안 올림
+backend-handoff.md
+gotchas.md
+product-import-guide.md
+qr-test-guide.md
