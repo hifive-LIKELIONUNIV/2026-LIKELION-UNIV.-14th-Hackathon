@@ -12,6 +12,7 @@
 }
 
 .passport-preview__download {
+    margin-top: 16px;
     padding: 12px 24px;
     background: #b3702f;
     color: #fff;
