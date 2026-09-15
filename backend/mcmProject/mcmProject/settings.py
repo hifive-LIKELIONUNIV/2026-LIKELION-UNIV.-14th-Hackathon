@@ -41,6 +41,24 @@ SECRET_KEY = os.environ.get(
 # 실제 배포 서버 .env에만 DJANGO_DEBUG=False를 추가해서 끈다.
 DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
+# Sentry 에러 트래킹 — .env에 SENTRY_DSN이 없으면 그냥 아무것도 안 하고 넘어감
+# (로컬 개발 환경에서 DSN 없이 실행해도 에러 안 나게).
+SENTRY_DSN = os.environ.get("SENTRY_DSN")
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "development" if DEBUG else "production"),
+        # 저사양 서버(t3.micro) 부하를 늘리지 않도록 성능 트레이싱은 끄고 에러 트래킹만 사용.
+        # 나중에 필요해지면 0.1 같은 값으로 올려서 일부 요청 성능도 함께 추적 가능.
+        traces_sample_rate=0.0,
+        send_default_pii=False,
+        enable_logs=True,
+    )
+
 # 개발용 설정 — 로컬 네트워크(휴대폰 QR 테스트 등)에서 어떤 호스트로 접속해도 허용.
 # 배포 서버 .env에 DJANGO_ALLOWED_HOSTS=timeportal-mcm.site,www.timeportal-mcm.site
 # 처럼 콤마로 구분해서 넣으면 그 값으로 좁혀지고, 없으면(로컬 등) 기존처럼 전체 허용.
