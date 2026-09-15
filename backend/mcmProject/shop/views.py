@@ -284,7 +284,14 @@ def era_status(request, selection_id, era):
 
 @require_POST
 def era_generate(request, selection_id, era):
-    """실제 gpt-image-2 호출. 로딩 화면의 fetch가 이 엔드포인트를 호출."""
+    """생성 시작 트리거 — 로딩 화면의 fetch가 이 엔드포인트를 호출.
+
+    실제 gpt-image-2 호출은 여기서 동기로 기다리지 않고 백그라운드 스레드
+    (_run_generation_in_background, 기존 '다음 시대 미리 생성'에 쓰던 것과 동일한 함수)에
+    맡기고 즉시 응답한다. 예전에는 여기서 동기로 기다렸는데, 생성에 최대 수십~180초가
+    걸리다 보니 그동안 gunicorn 워커 하나를 그대로 붙잡고 있어서, 워커 개수가 적은
+    서버에서는 동시 방문자가 조금만 몰려도 다른 모든 요청까지 같이 멈추는 문제가 있었음.
+    완료 여부는 프런트가 기존처럼 era_status를 폴링해서 감지한다."""
     selection = get_object_or_404(PersonaSelection, id=selection_id)
     if era not in ERA_ORDER:
         return JsonResponse({'error': '알 수 없는 시대입니다.'}, status=400)
@@ -309,22 +316,9 @@ def era_generate(request, selection_id, era):
 
     result.status = 'processing'
     result.save()
+    _run_generation_in_background(result.id)
 
-    try:
-        ai_service.generate_result(result)
-    except Exception as e:
-        print(f"[era_generate 실패] selection={selection.id} era={era}: {e}")
-        result.status = 'failed'
-        result.save()
-        return JsonResponse(
-            {'error': '이미지 생성에 실패했어요. 잠시 후 다시 시도해주세요.'},
-            status=500,
-        )
-
-    return JsonResponse({
-        'success': True,
-        'redirect': reverse('shop:era_result', args=[selection.id, era]),
-    })
+    return JsonResponse({'processing': True})
 
 
 def era_result(request, selection_id, era):
